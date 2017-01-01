@@ -9,9 +9,6 @@
 /*Bitflags*/
 #define hasTail 1
 
-
-
-
 void awesomeError(const char *msg)
 {
     perror(msg);
@@ -40,14 +37,13 @@ int main(int argc, char* argv[]) {
         exit(0);
     }
 
-    /*I socket my socket*/
+    /*Create socket*/
     mySockFile = socket(AF_INET, SOCK_STREAM, 0);
     if (mySockFile < 0){
         awesomeError("Socket Error!");
     }
 
     bzero ( (char *) &servAddr, sizeof(servAddr));
-
     servAddr.sin_family = AF_INET;
     bcopy((char *)server->h_addr,
           (char *)&servAddr.sin_addr.s_addr,
@@ -55,26 +51,21 @@ int main(int argc, char* argv[]) {
     servAddr.sin_port = htons(portNumbr);
     if (connect(mySockFile,(struct sockaddr *) &servAddr,sizeof(servAddr)) < 0)
         awesomeError("ERROR connecting");
-    /*Senderoo*/
+    /*Sending*/
     printf("Please enter a message.\n");
     bzero(buffer,128);
     fgets(buffer,127,stdin);
-
 
     if (strlen(buffer)>1){
       myfirstpackage =  malloc(strlen(buffer)+2);
       myfirstpackage[0] = (uint8_t) hasTail;
       myfirstpackage[1] = (uint8_t) strlen(buffer);
       memcpy( &(myfirstpackage[2]), buffer,strlen(buffer));
-
   } else {
     myfirstpackage = malloc(1);
     myfirstpackage[0]=0;
   }
-
-
   cnt = write(mySockFile,myfirstpackage,strlen(buffer)+1);
-
   if (cnt < 0)
       awesomeError("ERROR writing to socket");
 
