@@ -26,7 +26,7 @@ void print_list(t_list list);
 t_list *delete_front(t_list *list);
 void delete_list(t_list* list);
 t_node * choose_random_card(t_list* draw_pile, t_list* discard_pile);
-char** gimme(int needed_cards, t_list* draw, t_list* discard);
+char** gimmeCards(int needed_cards, t_list* draw, t_list* discard);
 void print_strArray(int needed_cards, char** arr);
 
 #endif

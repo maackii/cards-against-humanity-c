@@ -9,7 +9,7 @@ Todo:
   - do visualisation
 **********************************************************************/
 
-
+#include "read_text.h"
 #include <stdio.h>
 #include <sys/socket.h>
 //#include <errno.h>
@@ -85,10 +85,13 @@ char* readLine(int currentSocket, uint8_t memSize);         /*Receive Client Mes
     newRound
   }stateMachineStatus;*
 
-list functions*/
+player list functions*/
 player_t* createPlayer(player_t* head);         /*add player to list*/
 void printNodes(player_t* head);
 void destroyPlayers(player_t* head);
+
+/*Card List functions*/
+
 
 /*heres the main course*/
 int main(int argc, char* argv[]){

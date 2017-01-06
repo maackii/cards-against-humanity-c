@@ -16,7 +16,7 @@ uint8_t gap_cnt(char*str){  /*only if any question contains "_" sign*/
     return cnt;
 }
 
-t_node* add_new_back(t_list *list, char *answer){ /*gibt adresse des letzten nodes zurück*/
+t_node* add_new_back(t_list *list, char *answer){ /*gibt adresse des letzten nodes zurï¿½ck*/
     t_node *new_node = malloc(sizeof(t_node));
     t_node *cur;
 
@@ -26,10 +26,10 @@ t_node* add_new_back(t_list *list, char *answer){ /*gibt adresse des letzten nod
     new_node->strlen= (uint8_t) strlen(answer);
     /*printf("[add_new_back]: t2\n"); TEST TEST TEST*/
     new_node->str=malloc(strlen(answer)*sizeof(char)+1);
-    strcpy(new_node->str,answer);    /*new_node befüllen, initialisieren*/
+    strcpy(new_node->str,answer);    /*new_node befï¿½llen, initialisieren*/
     /*printf("[add_new_back]: t3\n"); TEST TEST TEST*/
     new_node->gaps=gap_cnt(answer);  /*only works if any question contains "_" sign & none of the answers*/
-    new_node->next=NULL;            /*Hier ringstruktur einfügen*/
+    new_node->next=NULL;            /*Hier ringstruktur einfï¿½gen*/
     list->elem_cnt+=1;
 
     if(list->first_element==NULL) {
@@ -41,7 +41,7 @@ t_node* add_new_back(t_list *list, char *answer){ /*gibt adresse des letzten nod
     for(cur=list->first_element;cur->next!=NULL;cur=cur->next){} /*liste durchlaufen bis ende*/
 
     /*printf("[add_new_back]: t5\n"); /*TEST TEST TEST*/
-    cur->next=new_node;/*einhängen am ende*/
+    cur->next=new_node;/*einhï¿½ngen am ende*/
     /*printf("[add_new_back]: t5\n"); TEST TEST TEST*/
     return new_node;
 }
@@ -52,7 +52,7 @@ t_list create_blank_list (t_list list){
     return list;
 }
 
-t_list create_list(char *fn, t_list list) { /*initialisiere fn mit NULL für blank list*/
+t_list create_list(char *fn, t_list list) { /*initialisiere fn mit NULL fï¿½r blank list*/
     FILE *fp;
     int test = 0;
     char *fget, *buffer = malloc(MAX_STR_LEN * sizeof(char));    /*zwischenspeicher*/
@@ -83,7 +83,7 @@ t_list create_list(char *fn, t_list list) { /*initialisiere fn mit NULL für blan
     return list;
 }
 
-t_node * find_elem(int n, t_list *list){ /*gibt adresse der n-ten node in list zurück*/
+t_node * find_elem(int n, t_list *list){ /*gibt adresse der n-ten node in list zurï¿½ck*/
     t_node* cur=NULL;
     t_node* buf=NULL;
     int cnt=0;
@@ -106,15 +106,15 @@ void add(t_list *list, t_node *node){
     node->next=p;
 }
 
-t_node* remove_node(t_list *list, t_node* node){ /*hängt "node" aus "list" aus, gibt Adresse der ausgehängten node zurück*/
+t_node* remove_node(t_list *list, t_node* node){ /*hï¿½ngt "node" aus "list" aus, gibt Adresse der ausgehï¿½ngten node zurï¿½ck*/
     t_node* buf;
     t_node* pre;
 
-    if(list->first_element==node){ /*sonderfall: das erste Element soll ausgehängt werden */
+    if(list->first_element==node){ /*sonderfall: das erste Element soll ausgehï¿½ngt werden */
         list->first_element=node->next;
         list->elem_cnt--;
         return node;
-    }else{                   /*normalfall: zweites oder höheres element wird ausgehängt*/
+    }else{                   /*normalfall: zweites oder hï¿½heres element wird ausgehï¿½ngt*/
         for(pre=list->first_element; pre->next!=node && pre->next!=NULL;pre=pre->next){}
 
         if(pre->next==NULL){
@@ -129,7 +129,7 @@ t_node* remove_node(t_list *list, t_node* node){ /*hängt "node" aus "list" aus, 
     }
 }
 
-void elem_pileChange(int n, t_list* list1, t_list *list2){ /*n-te element aus list 1 aus- und in list 2 einhängen*/
+void elem_pileChange(int n, t_list* list1, t_list *list2){ /*n-te element aus list 1 aus- und in list 2 einhï¿½ngen*/
     t_node* buf;
     t_node* pre;
 
@@ -163,14 +163,14 @@ void elem_pileChange(int n, t_list* list1, t_list *list2){ /*n-te element aus li
     }else{ /*wenn buff das erste element in list 1 ist*/
         list1->first_element=list1->first_element->next;
     }
-    add_new_back(list2, buf->str); /*einhängen in list2*/
+    add_new_back(list2, buf->str); /*einhï¿½ngen in list2*/
         /*printf("5[elem_pileC]%s\n", list2->first_element->str); /*TEST TEST TEST*/
         list1->elem_cnt--;
 
     return;
 } /*nicht in benutzung*/
 
-void change_pile(int n, t_list*list1, t_list *list2){ /*hänge aus list1 aus und in list2 ein*/
+void change_pile(int n, t_list*list1, t_list *list2){ /*hï¿½nge aus list1 aus und in list2 ein*/
     t_list buf;
     add(list2,remove_node(list1, find_elem(n, list1)));
 
@@ -207,7 +207,7 @@ t_list *delete_front(t_list *list){
     return list;
 }
 
-void delete_list(t_list* list){ /*ohne Rückgabewert?*/
+void delete_list(t_list* list){ /*ohne Rï¿½ckgabewert?*/
 
     while(list->first_element!=NULL){
         list=delete_front(list);
@@ -230,7 +230,7 @@ t_node * choose_random_card(t_list* draw_pile, t_list* discard_pile){
     return node;
 }
 
-char** gimme(int needed_cards, t_list* draw, t_list* discard){
+char** gimmeCards(int needed_cards, t_list* draw, t_list* discard){
     int i;
     t_node* node;
 
@@ -242,7 +242,7 @@ char** gimme(int needed_cards, t_list* draw, t_list* discard){
 
     for(i=0;i<needed_cards;i++){
         node=choose_random_card(draw,discard);
-        stringlist[i]=malloc((strlen(node->str)+1)*sizeof(char)); /*strlen plus platz für null terminator*/
+        stringlist[i]=malloc((strlen(node->str)+1)*sizeof(char)); /*strlen plus platz fï¿½r null terminator*/
         strcpy(stringlist[i], node->str);
     }
     return stringlist;
