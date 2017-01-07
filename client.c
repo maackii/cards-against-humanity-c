@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "cards.h"
+#include "players.h"
 #include "connectivity.h"
 
 
