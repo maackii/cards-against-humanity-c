@@ -1,8 +1,8 @@
 
 
 
-#ifndef CARDS_H_INCLUDED
-#define CARDS_H_INCLUDED
+#ifndef PLAYERS_H_INCLUDED
+#define PLAYERS_H_INCLUDED
 
 
 #define MAXPLAYERS 3
