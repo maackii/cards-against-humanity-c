@@ -3,9 +3,8 @@ Todo:
   - State Machine Functions
   - input Number of clients
   - input number of rounds
-  - Make Server conform (put the hton)
-  - integrate read Functions
-  - make Header Files
+  - Make Network conform (put the hton)
+  - integrate card Functions
   - do visualisation
 
 
