@@ -51,9 +51,6 @@ enum states{
 
 
 
-/*Card List functions*/
-
-
 /*heres the main course*/
 int main(int argc, char* argv[]){
 
