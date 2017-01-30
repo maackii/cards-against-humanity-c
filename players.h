@@ -1,6 +1,3 @@
-
-
-
 #ifndef PLAYERS_H_INCLUDED
 #define PLAYERS_H_INCLUDED
 
@@ -10,44 +7,39 @@
 #define MAXHANDCARDS 2
 
 /*Bitflags*/
-#define hasTail         1
-#define payloadIsString 2
-#define payloadIsInt    4
-#define ctrlMessage     8
+#define Update          1
+#define Collecting      2
+#define Judging         4
+#define Selection       8
+#define ctrlMessage    16
 
-//#define hasWinner 4
-/*player*/
+#define ERROR -1
+#define SUCCESS 1
 
-
-enum result{
-    success,
-    fail
-};
 
 enum role{
-    cardCzar,
-    regular
+    czar,
+    player
 };
 
-typedef struct player{
-    int role;
+ttypedef struct player{
     int socketID;
-    int numbCards;
-    int numberAnswers;
-    int question;
+    int role;
+    int handCards;
+    int requestedCards;
     int points;
     char* name;
-    char** answers;
+    char** cardText;                /** [0] = question **/
     struct player* nextPlayer;
 }player_t;
 
 
-/*player list functions*/
-player_t* createPlayer(player_t* head);         /*add player to list*/
-void printNodes(player_t* head);
-void destroyPlayers(player_t* head);
 
-
+/****************************************************************player list functions*/
+player_t* createPlayer(player_t* head, int socket);
+void printNodes(player_t* head);    /******remove after testing*/
+void destroyPlayers(player_t** head);
 
 
 #endif
+
