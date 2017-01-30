@@ -7,45 +7,52 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "players.h"
 
 
 
 
-player_t* createPlayer(player_t* head) {
-    player_t* newPlayer = NULL;
-    newPlayer = malloc(sizeof(player_t)); /*make head*/
-    if (newPlayer == NULL) {
-        return head;
-    }
-    newPlayer->numbCards = 0;
-    newPlayer->numberAnswers = 0;
-    newPlayer->points = 0;
-    newPlayer->answers = NULL;
-    newPlayer->role = (head == NULL ? cardCzar : regular);
-    newPlayer->nextPlayer = head;
+/****************************************************************player list functions*/
 
-    return newPlayer;
-}
 
-void printNodes(player_t* head){
+void printNodes(player_t* head){                          /******remove after testing*/
     player_t* current = head;
     while (current != NULL){
-        printf("Message= %s:\n", current->answers[0]);
+        printf("ID = %d:\n", current->socketID);
         current = current->nextPlayer;
     }
     return;
 }
 
-void destroyPlayers(player_t* head) {
-    player_t* current = head;
-    player_t* next;
-    //while (current != NULL) {
-    //next = current->nextPlayer;
-    //if (current->answers != NULL){
-    //free(current->answers);
-    //}
-    free(current);
-    //current = next;
-    //}
+void destroyPlayers(player_t** head) {
+    player_t *current = NULL;
+    current = *head;
+    player_t *next = NULL;
+
+    while (current != NULL) {
+        if (current->cardText != NULL){
+            free(current->cardText);
+        }
+        free(current->name);
+        next = current->nextPlayer;
+        free(current);
+        current = next;
+    }
 }
+
+player_t* createPlayer(player_t *head, int socket) {
+    player_t* newPlayer = NULL;
+    newPlayer = malloc(sizeof(player_t));
+    if (newPlayer == NULL) {
+        return NULL;
+    }
+    newPlayer->socketID = socket;
+    newPlayer->handCards = 0;
+    newPlayer->requestedCards = 0;
+    newPlayer->points = 0;
+    newPlayer->name = NULL;
+    newPlayer->cardText = NULL;
+    newPlayer->role = (head == NULL ? czar : player);
+    newPlayer->nextPlayer = head;
+    return newPlayer;
+}
+
