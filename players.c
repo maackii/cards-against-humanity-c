@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "players.h"
 
 
 
@@ -55,4 +56,3 @@ player_t* createPlayer(player_t *head, int socket) {
     newPlayer->nextPlayer = head;
     return newPlayer;
 }
-
