@@ -17,8 +17,9 @@ int main(int argc, char* argv[]) {
     intmax_t cnt;
     char buffer [128];
     char* messages[2] = {"These are", "test messages"};
-
-    player_t player = {regular, -1, 0, 0, 0, 0, NULL, NULL, NULL};
+    uint8_t instruction = 0;
+    int type = 0;
+    player_t player = {0, -1, 0, 0, 0, 0, NULL, NULL, NULL};
 
     if (argc < 3) {
         fprintf(stderr,"ERROR, no port provided\n");
@@ -35,44 +36,17 @@ int main(int argc, char* argv[]) {
     /*I socket my socket*/
     player.socketID = connectToServer(portNumbr, server);
     if(player.socketID < 0){
-      awesomeError("Could not create socket!");
+      //awesomeError("Could not create socket!");
       exit(-1);
     }
-    /*Senderoo*/
-    player.answers = malloc(sizeof(char*) * 5);
-    for(int i = 0; i < 5; i++) player.answers[i] = NULL;
-
-    //get cards!
-    char** tmpCharArray = NULL;
-    int status = getPackage(player.socketID, &(tmpCharArray), 0);
-    for(int i = 0; i < status; i++){
-      for(int j = 0; j < 5 && tmpCharArray[i] != NULL; j++){
-        if(player.answers[j] == NULL){
-          player.answers[j] = tmpCharArray[i];
-          tmpCharArray[i] = NULL;
-          player.numberAnswers++;
-          printf("String %d: %s\n", i +1, player.answers[i]);
-        }
+    printf("I am connected\n");
+    type = getStatus(player.socketID);
+    if (type == CTRL_MESSAGE){
+      if (SUCCESS == getIntPackage(player.socketID, &instruction)){
+        printf("Ctrl Message number %d\n", instruction);
       }
     }
-    free(tmpCharArray);
-
-    //get question
-    status = getPackage(player.socketID, &(tmpCharArray), 0);
-    if(status > 0)printf("%s\n (press 0-5)\n", tmpCharArray[0]);
-    free(tmpCharArray);
-
-    int tmpInt = -1;
-    scanf("%d", &tmpInt);
-
-    //send answer
-    status = sendPackage(player.socketID, payloadIsString, &(player.answers[tmpInt]), 1);
-    if(status < 0)awesomeError("Dangit!\n");
-    free(player.answers[tmpInt]);
-    player.answers[tmpInt] = NULL;
-    player.numberAnswers--;
-
-
+    
     close(player.socketID);
 
     return 0;
