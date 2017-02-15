@@ -6,12 +6,7 @@
 //#define MAXROUNDS 100
 #define MAXHANDCARDS 2
 
-/*Bitflags*/
-#define Update          1
-#define Collecting      2
-#define Judging         4
-#define Selection       8
-#define ctrlMessage    16
+
 
 #define ERROR -1
 #define SUCCESS 1
@@ -22,7 +17,7 @@ enum role{
     player
 };
 
-ttypedef struct player{
+typedef struct player{
     int socketID;
     int role;
     int handCards;
@@ -42,4 +37,3 @@ void destroyPlayers(player_t** head);
 
 
 #endif
-
