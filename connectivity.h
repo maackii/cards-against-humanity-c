@@ -12,15 +12,22 @@
 
 /*bitflags & ctrl messages*/
 
-#define CTRL_MESSAGE     0
-#define DATA_MESSAGE     1
-#define NEW_ROUND        2
-#define OK               4
-#define DISPLAY_CARDS    8
-#define DISPLAY_ANSWERS 16
+#define MSG_CTRL_MESSAGE     0
+#define MSG_DATA_MESSAGE     1
+#define MSG_NEW_ROUND        2
+#define MSG_OK               4
+#define MSG_DISPLAY_CARDS    8
+#define MSG_DISPLAY_ANSWERS 16
 
 /*typeFlags*/
 
+#define D_TYPE_HANDCARDS 1
+#define D_TYPE_QUESTION 2
+#define D_TYPE_NAME 4
+#define D_TYPE_POINTS 8
+#define D_TYPE_ROLE 16
+
+/*
 enum dataType{
   handcards,
   question,
@@ -28,6 +35,7 @@ enum dataType{
   points,
   role
 };
+ */
 
 /*Connection Functions*/
 int createMainSocket(int port);                       /*Create main Socket*/
