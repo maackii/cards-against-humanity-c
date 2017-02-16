@@ -1,8 +1,8 @@
 //#include "read_text.h"
 #include <stdio.h>
 #include <sys/socket.h>
-//#include <errno.h>
-//#include <sys/types.h>
+#include <errno.h>
+#include <sys/types.h>
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -71,7 +71,12 @@ int main(int argc, char* argv[]){
 
     printf("all clients connected\n");
     czar = headPlayer;
-    if (SUCCESS == sendIntPackage(headPlayer->socketID, CTRL_MESSAGE, OK)){
+
+    if(SUCCESS == sendDataPackage(headPlayer->socketID, 1, 0, cards, 5)){
+      printf("Success!\n");
+    }
+
+    /*if (SUCCESS == sendIntPackage(headPlayer->socketID, CTRL_MESSAGE, OK)){
       printf("Hurray\n");
     }
     char** recvMessages = NULL;
