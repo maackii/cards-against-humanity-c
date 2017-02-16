@@ -8,7 +8,12 @@
 #include "players.h"
 #include "connectivity.h"
 
-
+/*linked list for answers
+struct answerCollect{
+  int playerID;
+  char** answers;
+};
+*/
 
 int main(int argc, char* argv[]) {
 
@@ -17,7 +22,7 @@ int main(int argc, char* argv[]) {
     intmax_t cnt;
     char buffer [128];
     char* messages[2] = {"These are", "test messages"};
-    uint8_t instruction = 0, defaultV = 0;
+    uint8_t instruction = 0, typeFlag = -1, typeID = -1;
     int type = 0;
     player_t player = {0, -1, 0, 0, 0, 0, NULL, NULL, NULL};
     char** recMessages = NULL;
@@ -41,9 +46,13 @@ int main(int argc, char* argv[]) {
       exit(-1);
     }
     printf("I am connected\n");
+
+
+
     if (DATA_MESSAGE == getStatus(player.socketID)){
-      defaultV = getStatus(player.socketID);
-      cnt = getDataPackage(player.socketID, &recMessages, &instruction);
+      typeFlag = getStatus(player.socketID);
+      printf("I am type Flag: %d\n", typeFlag);
+      cnt = getDataPackage(player.socketID, &recMessages, &typeID);
         printf("Success\n");
         for (int i = 0; i < cnt; i++){
           printf("%s\n", recMessages[i]);
