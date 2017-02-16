@@ -103,7 +103,7 @@ uint8_t getStatus(int socket){
     return statusID;
 }
 
-int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, char** messages, int numberOfMessages){
+int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, int numberOfMessages, char** messages){
     uint8_t* package = NULL;
     intmax_t cnt;
     int packageSize;
@@ -113,6 +113,7 @@ int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, char** message
 
     for (int n = 0; n < numberOfMessages; n++) {
         sumOfPayloadLength += strlen(messages[n]);
+        printf("%d\n", sumOfPayloadLength);
     }
     packageSize = sumOfPayloadLength + numberOfMessages + 1 + 1 + 1 + 1;
     package = malloc((packageSize) * sizeof(uint8_t));
@@ -127,15 +128,16 @@ int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, char** message
     for (int n = 0, track = 4; n < numberOfMessages; n++){
         package[track] = (uint8_t) strlen(messages[n]);
         memcpy( &(package[track+1]), messages[n], strlen(messages[n])); //added +1
+        track += package[track] + 1;
     }
     cnt = write(socket, package, packageSize);
 
-     free(package);
+    free(package);
     return (cnt < 0 ? ERROR : SUCCESS);
     //awesomeError("ERROR writing to socket");
 }
 
-int getDataPackage(int socket, char** *messages, uint8_t *typeID){ /*removed *messages for testing*/
+int getDataPackage(int socket, char** *messages, uint8_t *typeID){
   uint8_t numbMessages, stringSize;
   intmax_t cnt = 0;
   char* tempBuffer = NULL;
@@ -145,6 +147,7 @@ int getDataPackage(int socket, char** *messages, uint8_t *typeID){ /*removed *me
   //____________________________________________________remove after testing
   printf("My ID: %d\n", socket);
   *typeID = getStatus(socket);
+  printf("I am typeID %d\n", *typeID);
   cnt = read(socket, &numbMessages, 1);
   if(cnt < 0 || numbMessages < 0){
     //____________________________________________________remove after testing
@@ -154,9 +157,9 @@ int getDataPackage(int socket, char** *messages, uint8_t *typeID){ /*removed *me
 
     //____________________________________________________remove after testing
     printf("Receiving %d messages.\n", numbMessages);
-
-    if (numbMessages == 0)
+    if (numbMessages == 0){
         return 0;
+    }
     *messages = malloc(numbMessages*sizeof(char*));
     if(*messages == NULL) {
       perror("Error allocating memory!");
