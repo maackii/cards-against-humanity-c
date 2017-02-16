@@ -31,6 +31,8 @@ int connectToServer(int port, struct hostent* pServer);
 //int getMessages(player_t* current);
 //char* readLine(int currentSocket, uint8_t memSize);
 int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, char** messages, int numberOfMessages);
+int getDataPackage(int socket, char** *messages, uint8_t *typeID);
+char* readLine(int currentSocket, uint8_t memSize);
 int sendIntPackage(int socket, uint8_t flag, uint8_t payload);
 int getIntPackage (int socket, uint8_t* payload);
 uint8_t getStatus(int socket);
