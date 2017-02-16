@@ -135,6 +135,64 @@ int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, char** message
     //awesomeError("ERROR writing to socket");
 }
 
+int getDataPackage(int socket, char** *messages, uint8_t *typeID){ /*removed *messages for testing*/
+  uint8_t numbMessages, stringSize;
+  intmax_t cnt = 0;
+  char* tempBuffer = NULL;
+
+  if(socket < 0) {
+    return ERROR;}
+  //____________________________________________________remove after testing
+  printf("My ID: %d\n", socket);
+  *typeID = getStatus(socket);
+  cnt = read(socket, &numbMessages, 1);
+  if(cnt < 0 || numbMessages < 0){
+    //____________________________________________________remove after testing
+      perror("Number of strings in Packet unclear!");
+      return ERROR;
+    }
+
+    //____________________________________________________remove after testing
+    printf("Receiving %d messages.\n", numbMessages);
+
+    if (numbMessages == 0)
+        return 0;
+    *messages = malloc(numbMessages*sizeof(char*));
+    if(*messages == NULL) {
+      perror("Error allocating memory!");
+      return ERROR;
+    }
+
+    for (int n = 0; n < numbMessages; n++){
+        cnt = read(socket, &stringSize, 1);
+        if (cnt < 0){
+            perror("error reading memSize from sock");
+            return ERROR;
+        }
+        printf("size of payload string %d is %d bytes\n",n+1, stringSize);
+        (*messages)[n] = readLine(socket, stringSize);
+    }
+  return numbMessages;
+}
+
+char* readLine(int currentSocket, uint8_t memSize){
+    char* buffer = NULL;
+    intmax_t cnt = 0;
+    printf("%d\n", memSize);
+    buffer = malloc (memSize+1);
+    cnt = read(currentSocket, buffer, memSize);
+    buffer[memSize] = 0;
+    if (cnt < 0){
+        perror("error reading String from sock");
+        free(buffer);
+        return NULL;
+    }
+    if (cnt < 0) {
+        perror("ERROR writing to socket");
+    }
+    return buffer;
+}
+
 int sendIntPackage(int socket, uint8_t flag, uint8_t payload){
     uint8_t* package = NULL;
     intmax_t cnt;
