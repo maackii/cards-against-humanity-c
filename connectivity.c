@@ -115,16 +115,16 @@ uint8_t getStatus(int socket){
     return statusID;
 }
 
-int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, int numberOfMessages, char** messages){
-    uint8_t* package = NULL;
+int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, int numberOfMessages, char** messages) {
+    uint8_t *package = NULL;
     intmax_t cnt;
     int packageSize;
     int sumOfPayloadLength = 0;
 
-    if(socket < 0) return ERROR;
-    if (messages == NULL || numberOfMessages == 0){
+    if (socket < 0) return ERROR;
+    if (messages == NULL || numberOfMessages == 0) {
         packageSize = 3;
-        package[0] = DATA_MESSAGE;
+        package[0] = MSG_DATA;
         package[1] = typeFlag;
         package[2] = typeID;
 
@@ -132,30 +132,31 @@ int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, int numberOfMe
         free(package);
         return (cnt < 0 ? ERROR : SUCCESS);
     } else {
-    for (int n = 0; n < numberOfMessages; n++) {
-          sumOfPayloadLength += strlen(messages[n]);
-          //printf("%d\n", sumOfPayloadLength);
-    }
-    packageSize = sumOfPayloadLength + numberOfMessages + 1 + 1 + 1 + 1;
-    package = malloc((packageSize) * sizeof(uint8_t));
-    if(package == NULL){
-        return ERROR;
-    }
-    package[0] = MSG_DATA_MESSAGE;
-    package[1] = typeFlag;
-    package[2] = typeID;
-    package[3] = numberOfMessages;
+        for (int n = 0; n < numberOfMessages; n++) {
+            sumOfPayloadLength += strlen(messages[n]);
+            //printf("%d\n", sumOfPayloadLength);
+        }
+        packageSize = sumOfPayloadLength + numberOfMessages + 1 + 1 + 1 + 1;
+        package = malloc((packageSize) * sizeof(uint8_t));
+        if (package == NULL) {
+            return ERROR;
+        }
+        package[0] = MSG_DATA;
+        package[1] = typeFlag;
+        package[2] = typeID;
+        package[3] = numberOfMessages;
 
-    for (int n = 0, track = 4; n < numberOfMessages; n++){
-        package[track] = (uint8_t) strlen(messages[n]);
-        memcpy( &(package[track+1]), messages[n], strlen(messages[n])); //added +1
-        track += package[track] + 1;
-    }
-    cnt = write(socket, package, packageSize);
+        for (int n = 0, track = 4; n < numberOfMessages; n++) {
+            package[track] = (uint8_t) strlen(messages[n]);
+            memcpy(&(package[track + 1]), messages[n], strlen(messages[n])); //added +1
+            track += package[track] + 1;
+        }
+        cnt = write(socket, package, packageSize);
 
-    free(package);
-    return (cnt < 0 ? ERROR : SUCCESS);
-    //awesomeError("ERROR writing to socket");
+        free(package);
+        return (cnt < 0 ? ERROR : SUCCESS);
+        //awesomeError("ERROR writing to socket");
+    }
 }
 
 int getDataPackage(int socket, char** *messages, uint8_t *typeID){
@@ -236,12 +237,12 @@ int sendIntPackage(int socket, uint8_t flag, uint8_t payload){
     return (cnt < 0 ? ERROR : SUCCESS);
 }
 
-int getIntPackage (int socket, uint8_t* payload){
-  intmax_t cnt = 0;
-  if(socket < 0 ) return ERROR;
-  cnt = read(socket, payload,1);
-    if(cnt < 0 || *payload < 0){
-      return ERROR;
+int getIntPackage (int socket, uint8_t* payload) {
+    intmax_t cnt = 0;
+    if (socket < 0) return ERROR;
+    cnt = read(socket, payload, 1);
+    if (cnt < 0 || *payload < 0) {
+        return ERROR;
     }
     printf("Received integer %d.\n", *payload);
     return SUCCESS;
