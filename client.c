@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    if (MSG_DATA_MESSAGE == getStatus(player.socketID)){
+    if (MSG_DATA == getStatus(player.socketID)){
       typeFlag = getStatus(player.socketID);
       printf("I am type Flag: %d\n", typeFlag);
       cnt = getDataPackage(player.socketID, &recMessages, &typeID);
@@ -142,18 +142,20 @@ int main(int argc, char* argv[]) {
         // Status Update
         data_type = getStatus(player.socketID);
 
-        data_type = MSG_DATA_MESSAGE;  //just for testing
+        data_type = MSG_DATA;  //just for testing
 
 
-        if(MSG_CTRL_MESSAGE == data_type) {
+        if(MSG_CTRL == data_type) {
             getIntPackage(player.socketID, &ctrl);
 
-        }else if(MSG_DATA_MESSAGE == data_type){
+        }else if(MSG_DATA == data_type){
             update_status(player);
 
         }else{
             printf("no new ctrl- or data-messages\n");
         }
+
+
 
         //Switch statement
         switch(ctrl) {
