@@ -10,6 +10,8 @@
 #define ERROR -1
 #define SUCCESS 1
 
+#define SHOW_ERROR_HANDLING 1
+
 /*bitflags & ctrl messages*/
 
 #define MSG_CTRL        0
@@ -37,6 +39,9 @@ enum dataType{
   role
 };
  */
+
+/*ERROR HANDLING*/
+void gimme_good_lines(char *message, int line);
 
 /*Connection Functions*/
 int createMainSocket(int port);                       /*Create main Socket*/
