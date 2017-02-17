@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
     printf("all clients connected\n");
     czar = headPlayer;
 
-    if(SUCCESS == sendDataPackage(headPlayer->socketID, 1, 0, cards, 5)){
+    if(SUCCESS == sendDataPackage(headPlayer->socketID, 1, 0, 5, cards)){
       printf("Success!\n");
     }
 
