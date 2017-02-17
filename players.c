@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "players.h"
+#include "cardpiles.h"
 
 
 
@@ -31,7 +32,10 @@ void destroyPlayers(player_t** head) {
 
     while (current != NULL) {
         if (current->cardText != NULL){
-            free(current->cardText);
+            for(int i = 0; i < MAXHANDCARDS; i++){
+            free(current->cardText[i]);
+          }
+          free(current->cardText);
         }
         free(current->name);
         next = current->nextPlayer;
@@ -40,7 +44,7 @@ void destroyPlayers(player_t** head) {
     }
 }
 
-player_t* createPlayer(player_t *head, int socket) {
+player_t* createPlayer(player_t* head, int socket) {
     player_t* newPlayer = NULL;
     newPlayer = malloc(sizeof(player_t));
     if (newPlayer == NULL) {
@@ -48,11 +52,54 @@ player_t* createPlayer(player_t *head, int socket) {
     }
     newPlayer->socketID = socket;
     newPlayer->handCards = 0;
-    newPlayer->requestedCards = 0;
     newPlayer->points = 0;
     newPlayer->name = NULL;
-    newPlayer->cardText = NULL;
     newPlayer->role = (head == NULL ? czar : player);
     newPlayer->nextPlayer = head;
+    newPlayer->cardText = NULL;
     return newPlayer;
+}
+
+int updateHandcards(player_t** head, pile_t** draw, pile_t** discard){
+  player_t *current = NULL;
+  card_t* temp = NULL;
+  current = *head;
+  while (current != NULL) {
+
+    if(current->handCards < MAXHANDCARDS){
+      current->cardText = malloc ((MAXHANDCARDS - current->handCards) * sizeof(char*));
+      for (int i = 0; i < (MAXHANDCARDS - current->handCards); i++){
+        current->cardText[i] = NULL;
+      }
+
+      for(int i = 0; i < (MAXHANDCARDS - current->handCards); i++){
+        if(current->cardText[i] == NULL){
+          temp = drawRandomCard(draw, discard);
+          if (temp==NULL){
+            return ERROR;
+          }
+          current->cardText[i] = malloc((strlen(temp->text)+1)* sizeof(char));
+          strcpy(current->cardText[i], temp->text);
+        }
+      }
+    }
+
+    current = current->nextPlayer;
+  }
+
+  return SUCCESS;
+}
+
+int updatePoints(player_t** head, int winnerID){
+  player_t *current = NULL;
+  int cnt = 0;
+  current = *head;
+  while (current != NULL) {
+      if (current->socketID == winnerID){
+        current->points++;
+        cnt++;
+      }
+      current= current->nextPlayer;
+  }
+  return (cnt == 1? SUCCESS:ERROR);
 }
