@@ -12,20 +12,21 @@
 
 /*bitflags & ctrl messages*/
 
-#define MSG_CTRL_MESSAGE     0
-#define MSG_DATA_MESSAGE     1
-#define MSG_NEW_ROUND        2
-#define MSG_OK               4
-#define MSG_DISPLAY_CARDS    8
-#define MSG_DISPLAY_ANSWERS 16
+#define MSG_CTRL        0
+#define MSG_DATA        1
+
+#define C_TYPE_NEW_ROUND        0
+#define C_TYPE_OK               1
+#define C_TYPE_DISPLAY_CARDS    2
+#define C_TYPE_DISPLAY_ANSWERS  4
 
 /*typeFlags*/
 
-#define D_TYPE_HANDCARDS 1
-#define D_TYPE_QUESTION 2
-#define D_TYPE_NAME 4
-#define D_TYPE_POINTS 8
-#define D_TYPE_ROLE 16
+#define D_TYPE_HANDCARDS  0
+#define D_TYPE_QUESTION   1
+#define D_TYPE_NAME       2
+#define D_TYPE_POINTS     4
+#define D_TYPE_ROLE       8
 
 /*
 enum dataType{
