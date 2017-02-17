@@ -122,10 +122,19 @@ int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, int numberOfMe
     int sumOfPayloadLength = 0;
 
     if(socket < 0) return ERROR;
+    if (messages == NULL || numberOfMessages == 0){
+        packageSize = 3;
+        package[0] = DATA_MESSAGE;
+        package[1] = typeFlag;
+        package[2] = typeID;
 
+        cnt = write(socket, package, packageSize);
+        free(package);
+        return (cnt < 0 ? ERROR : SUCCESS);
+    } else {
     for (int n = 0; n < numberOfMessages; n++) {
-        sumOfPayloadLength += strlen(messages[n]);
-        printf("%d\n", sumOfPayloadLength);
+          sumOfPayloadLength += strlen(messages[n]);
+          //printf("%d\n", sumOfPayloadLength);
     }
     packageSize = sumOfPayloadLength + numberOfMessages + 1 + 1 + 1 + 1;
     package = malloc((packageSize) * sizeof(uint8_t));
