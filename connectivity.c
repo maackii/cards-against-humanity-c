@@ -16,7 +16,19 @@
 #include "connectivity.h"
 #include "players.h"
 
+/*--------------ERROR FLYNN------------------*/
 
+void gimme_good_lines(char *message, int line){
+    if (SHOW_ERROR_HANDLING == 1){
+        printf("---------------\nREACHED LINE: %3d\n", line);
+        if(strlen(message) != 0){
+            printf("following message received: %s\n", message);
+        }
+        printf("---------------\n");
+    }
+}
+
+/*--------------ERROR FLYNN------------------*/
 
 
 /*************************************************************************connection functions*/
@@ -120,7 +132,7 @@ int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, int numberOfMe
     if(package == NULL){
         return ERROR;
     }
-    package[0] = DATA_MESSAGE;
+    package[0] = MSG_DATA_MESSAGE;
     package[1] = typeFlag;
     package[2] = typeID;
     package[3] = numberOfMessages;
