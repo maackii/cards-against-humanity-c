@@ -85,7 +85,7 @@ void freePile(pile_t** pile){
     while (head != NULL){
         temp = head->next;
         free(head->text);
-        free(head->next);
+        free(head);
         head = temp;
     }
     free(*pile);
