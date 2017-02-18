@@ -55,6 +55,7 @@ void choose_replies(player_t *player, int gaps){
         player->replies[i] = malloc(strlen(player->cardText[scan -1]) * sizeof(char));
         strcpy(player->replies[i], player->cardText[scan -1]);
         player->cardText[scan -1] = NULL;
+        player->handCards--;
 
     }
     gimme_good_lines("", __LINE__);
@@ -68,7 +69,7 @@ void display_cards(player_t player, gameState_t game){
 
     printCard(game.question, 1);
 
-    for(i = 0; player.role != CARDCZAR && i < HANDCARDS_MAX; i++){
+    for(i = 0; player.role == PLAYER && i < HANDCARDS_MAX; i++){
         if(player.cardText[i] != NULL)
             printCard(player.cardText[i], 0);
     }
@@ -81,7 +82,6 @@ uint8_t ok_cardnumber(player_t *player){
         return C_TYPE_OK;
     }
     else return 0;
-
 }
 
 void update_status(player_t *player, gameState_t *game){
