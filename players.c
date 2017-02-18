@@ -60,7 +60,7 @@ player_t* createPlayer(player_t* head, int socket) {
     newPlayer->handCards = 0;
     newPlayer->points = 0;
     newPlayer->name = NULL;
-    newPlayer->role = (head == NULL ? czar : player);
+    newPlayer->role = (head == NULL ? CARDCZAR : PLAYER);
     newPlayer->nextPlayer = head;
     newPlayer->cardText = NULL;
     newPlayer->cardText = malloc(MAXHANDCARDS * sizeof(char*));
@@ -81,20 +81,21 @@ int updateHandcards(player_t** head, pile_t** draw, pile_t** discard){
   card_t* temp = NULL;
   current = *head;
   while (current != NULL) {
-      for(int i = 0; i < (MAXHANDCARDS - current->handCards); i++){
-        if(current->cardText[i] == NULL){
-          temp = drawRandomCard(draw, discard);
-          if (temp==NULL){
-            return ERROR;
-          }
-          current->cardText[i] = malloc((strlen(temp->text)+1)* sizeof(char));
-          strcpy(current->cardText[i], temp->text);
-        }
-      }
 
+      for(int i = 0; i < (MAXHANDCARDS - current->handCards); i++){
+        if(current->cardText[i] != NULL){
+          free(current->cardText[i]);
+          current->cardText[i] = NULL;
+        }
+        temp = drawRandomCard(draw, discard);
+        if (temp==NULL){
+          return ERROR;
+        }
+        current->cardText[i] = malloc((strlen(temp->text)+1)* sizeof(char));
+        strcpy(current->cardText[i], temp->text);
+        }
     current = current->nextPlayer;
   }
-
   return SUCCESS;
 }
 
@@ -107,7 +108,44 @@ int updatePoints(player_t** head, int winnerID){
         current->points++;
         cnt++;
       }
-      current= current->nextPlayer;
+      current = current->nextPlayer;
   }
   return (cnt == 1? SUCCESS:ERROR);
+}
+
+int updateRole(player_t** head){
+  player_t *current = NULL;
+  current = *head;
+  while (current != NULL){
+    if (current->role == CARDCZAR){
+      current->role = PLAYER;
+      current->nextPlayer->role == CARDCZAR;
+      return SUCCESS;
+    }
+    current = current->nextPlayer;
+  }
+  (*head)->role = CARDCZAR;
+  return SUCCESS;
+}
+
+int updateLeader(player_t* head, gameState_t* game){
+
+  player_t *current = NULL;
+  char buffer[MAXNAME+1];
+  int mostPoints = 0;
+  current = head;
+
+  while (current != NULL){
+    if( mostPoints < current->points){
+      strcpy(buffer, current->name);
+    }
+    current = current->nextPlayer;
+  }
+  if (game->leaderName != NULL){
+    free (game->leaderName);
+  }
+  game->leaderName = malloc((strlen(buffer)+1)*sizeof(char));
+  if (game->leaderName == NULL) return ERROR;
+  strcpy(game->leaderName, buffer);
+  return SUCCESS;
 }
