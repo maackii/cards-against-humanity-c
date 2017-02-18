@@ -132,7 +132,11 @@ int updateLeader(player_t* head, gameState_t* game){
     current = head;
     while (current != NULL){
         if( mostPoints < current->points){
-            strcpy(buffer, current->name);
+            if(current->name != NULL) {
+              strcpy(buffer, current->name);
+            } else {
+              strcpy(buffer, "ANON.");
+            }
             mostPoints = current->points;
         }
         current = current->nextPlayer;
