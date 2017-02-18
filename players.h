@@ -44,10 +44,10 @@ typedef struct player{
 /****************************************************************player list functions*/
 player_t* createPlayer(player_t* head, int socket);
 void printNodes(player_t* head);    /******remove after testing*/
-void destroyPlayers(player_t** head);
+void destroyGame(player_t** head, gameState_t* game);
 int updateHandcards(player_t** head, pile_t** draw, pile_t** discard);
 int updatePoints(player_t** head, int winnerID);
-int updateRole(player_t** head);
+int updateRole(player_t** head);)
 int updateLeader(player_t* head, gameState_t* game);
 
 
