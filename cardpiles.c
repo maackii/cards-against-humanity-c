@@ -7,12 +7,12 @@
 
 /*int main(int argc, char* argv[]){
 
-    t_pile* whiteCards = NULL;
-    t_pile* whiteDiscard = NULL;
-    whiteDiscard = malloc(sizeof(t_pile));
+    pile_t* whiteCards = NULL;
+    pile_t* whiteDiscard = NULL;
+    whiteDiscard = malloc(sizeof(pile_t));
 
 
-    t_card* test = NULL;
+    card_t* test = NULL;
     char* fileName = "answ.txt";
 
     createPile(fileName, &whiteCards);
@@ -39,12 +39,15 @@
 }*/
 
 /***************************************************PILE MANAGEMENT*/
-int createPile(char* fileName, t_pile **pile){
+int createPile(char* fileName, pile_t **draw, pile_t ** discard){
     FILE* sourceFile = NULL;
     int cnt;
     char buffer [MAX_STR_LEN];
 
-    if (createEmptyPile(&pile) == ERROR){
+    if (createEmptyPile(&draw) == ERROR){
+        return ERROR;
+    }
+    if (createEmptyPile(&discard) == ERROR){
         return ERROR;
     }
     sourceFile = fopen(fileName, "r");
@@ -55,15 +58,15 @@ int createPile(char* fileName, t_pile **pile){
         while (fgets(buffer, MAX_STR_LEN, sourceFile) != NULL) {
             cnt = strlen(buffer)-2;                                     /*This is weird*/
             buffer[cnt] = '\0';
-            (*pile)->card = addCard((*pile)->card, buffer);
-            (*pile)->cnt++;
+            (*draw)->card = addCard((*draw)->card, buffer);
+            (*draw)->cnt++;
         }
         fclose(sourceFile);
     }
     return SUCCESS;
 }
-int createEmptyPile(t_pile ***pile){
-    **pile = malloc(sizeof(t_pile));
+int createEmptyPile(pile_t ***pile){
+    **pile = malloc(sizeof(pile_t));
     if (*pile == NULL){
         return ERROR;
     }
@@ -72,9 +75,9 @@ int createEmptyPile(t_pile ***pile){
 
     return SUCCESS;
 }
-void freePile(t_pile** pile){
-    t_card* temp = NULL;
-    t_card* head = NULL;
+void freePile(pile_t** pile){
+    card_t* temp = NULL;
+    card_t* head = NULL;
     if (pile == NULL){
         return;
     }
@@ -89,8 +92,8 @@ void freePile(t_pile** pile){
     return;
 }
 /**************************************************CARD MANAGEMENT*/
-void printCards(t_pile* pile){
-    t_card* curr = pile->card;
+void printCards(pile_t* pile){
+    card_t* curr = pile->card;
 
     while (curr != NULL) {
         printf("%s\n", curr->text);
@@ -98,9 +101,9 @@ void printCards(t_pile* pile){
     }
     return;
 }
-t_card* drawRandomCard(t_pile** draw, t_pile** discard) {
-    t_card* head = NULL;
-    t_card* temp = NULL;
+card_t* drawRandomCard(pile_t** draw, pile_t** discard) {
+    card_t* head = NULL;
+    card_t* temp = NULL;
     int n;
     srand(clock());
     n = rand();
@@ -131,9 +134,9 @@ t_card* drawRandomCard(t_pile** draw, t_pile** discard) {
 
   return head;
 }
-t_card *addCard(t_card *head, char *text) {
-    t_card* newCard = NULL;
-    newCard = malloc (sizeof(t_card));
+card_t *addCard(card_t *head, char *text) {
+    card_t* newCard = NULL;
+    newCard = malloc (sizeof(card_t));
 
     if (newCard == NULL ){
         perror("Error creating new Card");
