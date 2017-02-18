@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #ifndef INCLUDE_CARDPILES_H
 #define INCLUDE_CARDPILES_H
 
