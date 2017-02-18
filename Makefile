@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 DEPS = connectivity.h players.h
-OBJS = connectivity.o players.o
+OBJS = connectivity.o players.o cardpiles.o
 
 
 all: connectserver connectclient
@@ -9,8 +9,8 @@ all: connectserver connectclient
 
 connectserver: server.o cardpiles.o $(OBJS)
 	$(CC) -o connectserver server.o cardpiles.o $(OBJS)
-connectclient: client.o connectivity.o
-	$(CC) -o connectclient client.o connectivity.o
+connectclient: client.o connectivity.o cardpiles.o
+	$(CC) -o connectclient client.o connectivity.o cardpiles.o
 
 server.o : server.c $(DEPS) cardpiles.h
 	$(CC) -c server.c
