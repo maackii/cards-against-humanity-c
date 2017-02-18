@@ -46,7 +46,7 @@ typedef struct player{
 player_t* createPlayer(player_t* head, int socket);
 void printNodes(player_t* head);    /******remove after testing*/
 void destroyPlayers(player_t** head);
-int updateHandcards(player_t** head, t_pile** draw, t_pile** discard);
+int updateHandcards(player_t** head, pile_t** draw, pile_t** discard);
 int updatePoints(player_t** head, int winnerID);
 
 
