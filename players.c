@@ -37,6 +37,12 @@ void destroyPlayers(player_t** head) {
           }
           free(current->cardText);
         }
+        if (current->replies != NULL){
+            for(int i = 0; i < MAXREPLIES; i++){
+            free(current->replies[i]);
+          }
+          free(current->replies);
+        }
         free(current->name);
         next = current->nextPlayer;
         free(current);
@@ -57,6 +63,16 @@ player_t* createPlayer(player_t* head, int socket) {
     newPlayer->role = (head == NULL ? czar : player);
     newPlayer->nextPlayer = head;
     newPlayer->cardText = NULL;
+    newPlayer->cardText = malloc(MAXHANDCARDS * sizeof(char*));
+      for (int i = 0; i < (MAXHANDCARDS); i++){
+        newPlayer->cardText[i] = NULL;
+    }
+    newPlayer->replies = NULL;
+    newPlayer->replies = malloc(MAXREPLIES * sizeof(char*));
+      for (int i = 0; i < (MAXREPLIES); i++){
+        newPlayer->cardText[i] = NULL;
+    }
+
     return newPlayer;
 }
 
@@ -65,13 +81,6 @@ int updateHandcards(player_t** head, t_pile** draw, t_pile** discard){
   t_card* temp = NULL;
   current = *head;
   while (current != NULL) {
-
-    if(current->handCards < MAXHANDCARDS){
-      current->cardText = malloc ((MAXHANDCARDS - current->handCards) * sizeof(char*));
-      for (int i = 0; i < (MAXHANDCARDS - current->handCards); i++){
-        current->cardText[i] = NULL;
-      }
-
       for(int i = 0; i < (MAXHANDCARDS - current->handCards); i++){
         if(current->cardText[i] == NULL){
           temp = drawRandomCard(draw, discard);
@@ -82,7 +91,6 @@ int updateHandcards(player_t** head, t_pile** draw, t_pile** discard){
           strcpy(current->cardText[i], temp->text);
         }
       }
-    }
 
     current = current->nextPlayer;
   }
