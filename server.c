@@ -39,31 +39,19 @@ enum stateMachine{
 int main(int argc, char* argv[]){
 
     int mySockFile, newConnect, portNumbr;
-    int check;
-
-    gameState_t game = {0, 0, 0, 0, 0, 0, NULL, 0, NULL };
-
-    /****************************************************PILES MANAGEMENT*/
+    player_t* headPlayer = NULL, *curPlayer = NULL;
     pile_t* whiteCards = NULL, *whiteDiscard = NULL, *blackCards = NULL, *blackDiscard = NULL;
-    createPile("answ.txt", &whiteCards, &whiteDiscard);
-    createPile("quest.txt", &blackCards, &blackDiscard);
-
-    //------------------------------------remove after testing
-    card_t* test = NULL;
-    char* cards[] = {"hey", "We", "Are", "Some", "Cards"};
-    player_t* headPlayer = NULL, *curPlayer = NULL, *momPlayer=NULL, *czar = NULL;
-    /*char** question = NULL, **answ = NULL;
-    char* buf = malloc(MAX_STR_LEN * sizeof(char));
-    int cntRound = 1;
-
-    int status = 0;
-    int numbrMessages = 0;
-  */
 
     //------------------------------------------------------REMOVE AFTER TESTING
-
+    int check;
+    gameState_t game = {0, 0, 0, 0, 0, 0, NULL, 0, NULL };
+    createPile("answ.txt", &whiteCards, &whiteDiscard);
+    createPile("quest.txt", &blackCards, &blackDiscard);
+    card_t* test = NULL;
+    char* cards[] = {"hey", "We","Are", "Some", "Cards"};
     printf("Number of Cards: %d\n", whiteCards->cnt);
-    /****************************************************Start Game and Read from Console*/
+
+    /****************************************Start Game and Read from Console*/
     if (argc < 2){
         fprintf(stderr,"ERROR, no port provided\n");
         exit(1);
@@ -84,12 +72,16 @@ int main(int argc, char* argv[]){
             printf("Client [%d] has val: %d\n", n, headPlayer->socketID);
         }
     }
+
+    //------------------------------------------------------REMOVE AFTER TESTING
     printf("all clients connected\n");
     game.currentState = newRound;
     game.winner = headPlayer->socketID;
     game.round = 2;
     printf("HOHOHO\n");
     printf("Game winner ID = %d\n", game.winner);
+
+
     switch(game.currentState){
 
         case newRound :

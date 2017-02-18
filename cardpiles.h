@@ -7,8 +7,8 @@
 #define MAX_CARD_WID 23
 #define MAX_LINE 10
 #define MAX_TEXT_Len 18
-#define BLACKBACK "\033[30;107m"        /*questions gaps >  0*/
-#define WHITEBACK "\033[97;40m"         /*answers   gaps == 0*/
+#define BLACKBACK "\033[30;107m"
+#define WHITEBACK "\033[97;40m"         
 #define RESET "\033[39;49m"
 #define ERROR -1
 #define SUCCESS 1

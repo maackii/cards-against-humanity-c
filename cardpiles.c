@@ -108,8 +108,6 @@ card_t* drawRandomCard(pile_t** draw, pile_t** discard) {
     srand(clock());
     n = rand();
     n = (n % ((*draw)->cnt));
-    printf("Random? %d\n", n);                                  /*****************test*/
-
     head = (*draw)->card;
 
     /*Pop from CardPile*/
@@ -126,9 +124,6 @@ card_t* drawRandomCard(pile_t** draw, pile_t** discard) {
     /*Add to DiscardPile*/
     head->next = (*discard)->card;
     (*discard)->card= head;
-
-    //printf("%s\n", rdmCard->text);                            /*****************test*/
-
     (*discard)->cnt++;
     (*draw)->cnt--;
 
@@ -158,7 +153,6 @@ card_t *addCard(card_t *head, char *text) {
         head = newCard;
         return head;
     }
-
     newCard->next = head;
     return newCard;
 }

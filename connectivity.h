@@ -31,16 +31,6 @@
 #define D_TYPE_ROLE       8
 #define D_TYPE_REPLIES   16
 
-/*
-enum dataType{
-  handcards,
-  question,
-  name,
-  points,
-  role
-};
- */
-
 /*ERROR HANDLING*/
 void gimme_good_lines(char *message, int line);
 
