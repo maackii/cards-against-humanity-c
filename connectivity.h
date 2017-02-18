@@ -29,6 +29,7 @@
 #define D_TYPE_NAME       2
 #define D_TYPE_POINTS     4
 #define D_TYPE_ROLE       8
+#define D_TYPE_REPLIES   16
 
 /*
 enum dataType{
