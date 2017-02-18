@@ -164,7 +164,7 @@ card_t *addCard(card_t *head, char *text) {
 }
 uint8_t gaps(char* str){
     uint8_t cnt = 0;
-    for (int i = 0; i < (MAX_STR_LEN+1); i++)
+    for (int i = 0; i < strlen(str); i++)
     {cnt += (str[i] == '_');
     }
     return cnt;
