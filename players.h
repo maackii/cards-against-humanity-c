@@ -15,6 +15,18 @@ enum role{
     player
 };
 
+typedef struct gameState{
+  int numbrRounds;
+  int scoreLeader;
+  char* leaderName;
+  int round;
+  int numbExpectedAnswers;
+  int numbPlayers;
+  int currentState;
+  char* question;
+  int winner;
+}gameState_t;
+
 typedef struct player{
     int socketID;
     int status;
@@ -22,7 +34,8 @@ typedef struct player{
     int handCards;
     int points;
     char* name;
-    char** cardText;                /** [0] = question **/
+    char** cardText;
+    char** replies;             /** [0] = question **/
     struct player* nextPlayer;
 }player_t;
 
