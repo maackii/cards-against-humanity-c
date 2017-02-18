@@ -76,9 +76,9 @@ player_t* createPlayer(player_t* head, int socket) {
     return newPlayer;
 }
 
-int updateHandcards(player_t** head, t_pile** draw, t_pile** discard){
+int updateHandcards(player_t** head, pile_t** draw, pile_t** discard){
   player_t *current = NULL;
-  t_card* temp = NULL;
+  card_t* temp = NULL;
   current = *head;
   while (current != NULL) {
       for(int i = 0; i < (MAXHANDCARDS - current->handCards); i++){
