@@ -6,7 +6,7 @@
 #include <netdb.h>
 #include "players.h"
 #include "connectivity.h"
-#include "cardpiles.h"              // ??????????ß      warum .c statt .h    ????????????
+#include "cardpiles.h"
 
 #define HANDCARDS_MAX 5
 
@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
 
 
     //While loop
-    while(break_loop < 5) {
+    while(break_loop < 7) {
 
         // Status Update
         ctrl = 111;
