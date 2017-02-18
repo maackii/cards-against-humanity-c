@@ -17,6 +17,12 @@ struct answerCollect{
 };
 */
 
+void add_to_playerList(player_t *headPlayer, int socketID){
+    int i;
+
+
+}
+
 // wählt antworten aus handcards, löscht diese nach auswahl aus handcards und fügt sie zu replies hinzu
 void choose_replies(player_t *player, int gaps){
     int i, scan, check_input = 1;
@@ -131,7 +137,15 @@ void update_status(player_t *player, gameState_t *game){
                     printCard(player->cardText[i], 0);
             }*/
             printf("number of handcards: %d\n", player->handCards);
+            break;
 
+        case D_TYPE_REPLIES:
+
+            numb_messg = getDataPackage(player->socketID, &recMessages, &typeID);
+
+            //delete content / old replies of player x
+
+            //write new replies of cur. player
 
             break;
 
