@@ -19,22 +19,22 @@ typedef struct card {
     uint8_t numbChar;
     uint8_t numbGaps;           /*  gaps==0 => white card, >0 => black card*/
     struct card* next;
-}t_card;
+}card_t;
 
 typedef struct pile{
     int cnt;
-    t_card* card;
-}t_pile;
+    card_t* card;
+}pile_t;
 
 /***************************************************PILE MANAGEMENT*/
-int createPile(char* fileName, t_pile **pile);
-int createEmptyPile(t_pile ***pile);
-void freePile(t_pile** pile);
+int createPile(char* fileName, pile_t **draw, pile_t ** discard);
+int createEmptyPile(pile_t ***pile);
+void freePile(pile_t** pile);
 
 /**************************************************CARD MANAGEMENT*/
-void printCards(t_pile* pile);                      /*Remove after testing*/
-t_card* drawRandomCard(t_pile** draw, t_pile** discard);
-t_card* addCard(t_card *head, char* text);    /*Missing error handling*/
+void printCards(pile_t* pile);                      /*Remove after testing*/
+card_t* drawRandomCard(pile_t** draw, pile_t** discard);
+card_t* addCard(card_t *head, char* text);    /*Missing error handling*/
 uint8_t gaps(char* str);
 
 /**************************************************PRINT CARD FUNCTIONS*/
