@@ -149,3 +149,20 @@ int updateLeader(player_t* head, gameState_t* game){
     game->scoreLeader = mostPoints;
     return SUCCESS;
 }
+
+int updateQuestion(gameState_t* game, pile_t** draw, pile_t** discard){
+    card_t* temp = NULL;
+    temp = drawRandomCard(draw, discard);
+    if (temp==NULL){
+        return ERROR;
+    }
+    if (game->question != NULL ){
+        free(game->question);
+        game->question = NULL;
+    }
+    game->question = malloc((strlen(temp->text)+1)* sizeof(char));
+    strcpy(game->question, temp->text);
+
+    return SUCCESS;
+
+}
