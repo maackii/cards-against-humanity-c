@@ -162,7 +162,7 @@ int updateQuestion(gameState_t* game, pile_t** draw, pile_t** discard){
     }
     game->question = malloc((strlen(temp->text)+1)* sizeof(char));
     strcpy(game->question, temp->text);
-
+    game->numbExpectedAnswers = temp->numbGaps;
     return SUCCESS;
 
 }
