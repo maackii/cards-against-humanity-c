@@ -38,7 +38,7 @@ t_card* addCard(t_card *head, char* text);    /*Missing error handling*/
 uint8_t gaps(char* str);
 
 /**************************************************PRINT CARD FUNCTIONS*/
-void printCard(char* str, int cardColor);
+void printCard(char* str, int cardColor); /*card color 0 == Weiß, >0 == Schwarz*/
 
 
 #endif
