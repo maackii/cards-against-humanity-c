@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 DEPS = connectivity.h players.h
-OBJS = connectivity.o players.o cardpiles.o
+OBJS = connectivity.o players.o
 
 
 all: connectserver connectclient
