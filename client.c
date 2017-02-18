@@ -6,7 +6,7 @@
 #include <netdb.h>
 #include "players.h"
 #include "connectivity.h"
-#include "cardpiles.h"              // ??????????ß      warum .c statt .h    ????????????
+#include "cardpiles.h"
 
 #define HANDCARDS_MAX 5
 
@@ -16,6 +16,12 @@ struct answerCollect{
   char** answers;
 };
 */
+
+void add_to_playerList(player_t *headPlayer, int socketID){
+    int i;
+
+
+}
 
 // wählt antworten aus handcards, löscht diese nach auswahl aus handcards und fügt sie zu replies hinzu
 void choose_replies(player_t *player, int gaps){
@@ -131,7 +137,15 @@ void update_status(player_t *player, gameState_t *game){
                     printCard(player->cardText[i], 0);
             }*/
             printf("number of handcards: %d\n", player->handCards);
+            break;
 
+        case D_TYPE_REPLIES:
+
+            numb_messg = getDataPackage(player->socketID, &recMessages, &typeID);
+
+            //delete content / old replies of player x
+
+            //write new replies of cur. player
 
             break;
 
@@ -262,7 +276,7 @@ int main(int argc, char* argv[]) {
 
 
     //While loop
-    while(break_loop < 5) {
+    while(break_loop < 7) {
 
         // Status Update
         ctrl = 111;
