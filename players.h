@@ -5,6 +5,7 @@
 #define MAXPLAYERS 3
 //#define MAXROUNDS 100
 #define MAXHANDCARDS 2
+#define MAXREPLIES 3
 
 #define ERROR -1
 #define SUCCESS 1
