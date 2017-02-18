@@ -219,8 +219,8 @@ int main(int argc, char* argv[]) {
     /*I socket my socket*/
     player.socketID = connectToServer(portNumbr, server);
     if(player.socketID < 0){
-      //awesomeError("Could not create socket!");
-      exit(-1);
+        //awesomeError("Could not create socket!");
+        exit(-1);
     }
     printf("I am connected\n");
 
@@ -295,37 +295,37 @@ int main(int argc, char* argv[]) {
 
             // Display new Round / New Game prompt / display winner & game status
             case C_TYPE_NEW_ROUND:
-                            //Check if first round
+                //Check if first round
 
-                            //Check number of cards
+                //Check number of cards
 
-                            //CTRL send ok if number of cards == 5
+                //CTRL send ok if number of cards == 5
                 break;
 
 
-            //Choose & send funny answers
+                //Choose & send funny answers
             case C_TYPE_DISPLAY_CARDS:
-                            //display answers and / or question
+                //display answers and / or question
                 display_cards(player, game);
-                            //choose funny answer(s)
+                //choose funny answer(s)
                 gimme_good_lines("", __LINE__);
                 choose_replies(&player, gaps(game.question));
                 gimme_good_lines("", __LINE__);
-                            //send funny answer(s)
+                //send funny answer(s)
                 sendDataPackage(player.socketID, D_TYPE_HANDCARDS, (uint8_t ) player.socketID, gaps(game.question), player.replies);
 
                 break;
 
 
-            //Czar choose winner
+                //Czar choose winner
             case C_TYPE_DISPLAY_ANSWERS:
-                            //get all funny answers
+                //get all funny answers
 
-                            //display all funny answers to all (shuffled)
+                //display all funny answers to all (shuffled)
 
-                            //Czar chooses winner
+                //Czar chooses winner
 
-                            //Czar sends winner to server
+                //Czar sends winner to server
                 break;
 
             case C_TYPE_OK:     //sends 1 if number of cards ok, sends 0 if not
