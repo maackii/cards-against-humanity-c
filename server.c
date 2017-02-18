@@ -9,45 +9,60 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "players.h"
-//#include "piles.h"
+#include "cardpiles.h"
 #include "connectivity.h"
 
 
 #define MAX_STR_LEN 512
-#define NUMBER_OF_PLAYERS 1
-#define MAX_HAND_CARDS 5
+#define NUMBER_OF_PLAYERS 2
 
-enum states{
+enum stateMachine{
     newRound,
     receiveReplies,
     waitWinner
-}stateMachineStatus;
+};
 
+//---------------------------------------moved struct to players.h
+/*typedef struct gameState{
+  int numbrRounds;
+  int numbPlayers;
+  int round;
+  int winner;
+  int currentState;
+  int scoreLeader;
+  char* leaderName;
+  int numbExpectedAnswers;
+  char* question;
+}gameState_t;*/
 
 
 int main(int argc, char* argv[]){
 
     int mySockFile, newConnect, portNumbr;
+    int check;
 
+    gameState_t game = {0, 0, 0, 0, 0, 0, NULL, 0, NULL };
 
+    /****************************************************PILES MANAGEMENT*/
+    pile_t* whiteCards = NULL, *whiteDiscard = NULL, *blackCards = NULL, *blackDiscard = NULL;
+    createPile("answ.txt", &whiteCards, &whiteDiscard);
+    createPile("quest.txt", &blackCards, &blackDiscard);
+
+    //------------------------------------remove after testing
+    card_t* test = NULL;
     char* cards[] = {"hey", "We", "Are", "Some", "Cards"};
     player_t* headPlayer = NULL, *curPlayer = NULL, *momPlayer=NULL, *czar = NULL;
-    char** question = NULL, **answ = NULL;
+    /*char** question = NULL, **answ = NULL;
     char* buf = malloc(MAX_STR_LEN * sizeof(char));
+    int cntRound = 1;
 
-    int n = 0;
-/*
     int status = 0;
-    int numbrRounds = 1;
     int numbrMessages = 0;
   */
 
-    //stateMachineStatus = startRound;
+    //------------------------------------------------------REMOVE AFTER TESTING
 
-    /****************************************************PILES MANAGEMENT*/
-    //t_list answ_draw = NULL, answ_dis = NULL, quest_draw = NULL, quest_dis = NULL;
-
-
+    printf("Number of Cards: %d\n", whiteCards->cnt);
     /****************************************************Start Game and Read from Console*/
     if (argc < 2){
         fprintf(stderr,"ERROR, no port provided\n");
@@ -57,6 +72,7 @@ int main(int argc, char* argv[]){
     mySockFile = createMainSocket(portNumbr);
 
     /***************************************************Connect & initiate Players array*/
+    int n = 0;
     while (n < NUMBER_OF_PLAYERS){
         listen(mySockFile,5);
         newConnect = connectClient(mySockFile);
@@ -68,57 +84,72 @@ int main(int argc, char* argv[]){
             printf("Client [%d] has val: %d\n", n, headPlayer->socketID);
         }
     }
-
     printf("all clients connected\n");
-    czar = headPlayer;
+    game.currentState = newRound;
+    game.winner = headPlayer->socketID;
+    game.round = 2;
+    printf("HOHOHO\n");
+    printf("Game winner ID = %d\n", game.winner);
+    switch(game.currentState){
 
-    if(SUCCESS == sendDataPackage(headPlayer->socketID, 1, 0, 5, cards)){
-      printf("Success!\n");
+        case newRound :
+          game.round++;
+          updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
+          updateQuestion(&game, &blackCards, &blackDiscard);
+          if (game.round > 1){
+              updatePoints(&headPlayer, game.winner);
+              updateRole(&headPlayer);
+              updateLeader(headPlayer, &game);
+          }
+          curPlayer = headPlayer;
+          while (curPlayer!= NULL){
+              /*if(curPlayer->handCards < MAXHANDCARDS){
+                sendDataPackage(curPlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - curPlayer->handCards), curPlayer->cardText );
+                curPlayer->handCards = MAXHANDCARDS;
+              }*/
+              sendDataPackage(curPlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
+
+              if (game.round > 1){
+                sendDataPackage(curPlayer->socketID, D_TYPE_POINTS, curPlayer->points, 0, NULL);
+                sendDataPackage(curPlayer->socketID, D_TYPE_ROLE, curPlayer->role, 0, NULL);
+              }
+        curPlayer = curPlayer->nextPlayer;
+        }
+        break;
+        default :
+         printf("Invalid State\n" );
     }
 
-    /*if (SUCCESS == sendIntPackage(headPlayer->socketID, CTRL_MESSAGE, OK)){
-      printf("Hurray\n");
-    }
-    char** recvMessages = NULL;
-    //stateMachineStatus stateMachine = newRound;
-
-    /****************************************************StateMachine*/
- /*while (1 == 1){
-   switch (stateMachine) {
-     case newRound:
-     updateAll();
-     sendDataPackage();
-     ctrl Message: display All smth-
-     receiveOK();
-
-      if (cnt == NUMBER_OF_PLAYERS){
-      stateMachine = receiveReplies;
-      break;
-      case receiveReplies:
-
-    }
-
-
-   }
-
- }
- */
-
+    freePile(&whiteCards);
+    freePile(&whiteDiscard);
     closeConnections(headPlayer, mySockFile);
-    destroyPlayers(&headPlayer);
+    destroyGame(&headPlayer, &game);
     return 0;
 }
 
 
-/*Functions*/
+/*if (SUCCESS == sendIntPackage(headPlayer->socketID, CTRL_MESSAGE, OK)){
+  printf("Hurray\n");
+}*/
 
-
-
+/*if(SUCCESS == sendDataPackage(headPlayer->socketID, 13, 0, 5, cards)){
+  printf("Success!\n");
+}*/
 
 /*set to nonblockin - maybe create own function
       int status = fcntl(mySockFile, F_SETFL, fcntl(mySockFile, F_GETFL, 0) | O_NONBLOCK);
       if (status == -1){
       perror("calling fcntl");
       // handle the error.
+}*/
+
+/*-----------------------------------------------burn after testing
+curPlayer = headPlayer;
+for (int j = 0; j < NUMBER_OF_PLAYERS; j++){
+  for (int i=0; i < NUMBER_OF_PLAYERS; i++){
+  printCard(curPlayer->cardText[i], 1);
+  printf("\n");
+}
+curPlayer = curPlayer->nextPlayer;
 }
 */
