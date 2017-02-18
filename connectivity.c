@@ -124,6 +124,7 @@ int sendDataPackage(int socket, uint8_t typeFlag, uint8_t typeID, int numberOfMe
     if (socket < 0) return ERROR;
     if (messages == NULL || numberOfMessages == 0) {
         packageSize = 3;
+        package = malloc((packageSize) * sizeof(uint8_t));
         package[0] = MSG_DATA;
         package[1] = typeFlag;
         package[2] = typeID;
