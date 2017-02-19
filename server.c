@@ -120,12 +120,12 @@ int main(int argc, char* argv[]){
             current = current->nextPlayer;
             }
             if (count == game.numbPlayers){
-              game.currentState = receiveReplies;
+              game.currentState = waitReplies;
               count = 0;
             }
         break;
 
-        case receiveReplies:
+        case waitReplies:
             current = NULL;
             check = 0;
             pINFO("Server state %s", "receiveReplies");
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]){
               case waitWinner:
                   current = NULL;
                   check = 0;
-                  pINFO("Server state %s", "receiveReplies");
+                  pINFO("Server state %s", "waitReplies");
 
 
               default :
