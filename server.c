@@ -125,7 +125,8 @@ int main(int argc, char* argv[]){
             pINFO("Server state %s", "receiveReplies");
             current = headPlayer;
             while (current != NULL) {
-              if (MSG_DATA == getStatus(current->socketID) && ((current->status) != C_TYPE_OK)) {
+              if ((MSG_DATA == getStatus(current->socketID)) && ((current->status) != C_TYPE_OK)) {
+                  pDEBUG("Server state %s", "receiveReplies 2");
                 if (D_TYPE_HANDCARDS == getStatus(current->socketID)) {
                   check = getDataPackage(current->socketID, &(current->replies), &check);
                   pDEBUG("SERVER %s", "Received DataPackage");
