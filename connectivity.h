@@ -3,6 +3,29 @@
 #include <netdb.h>
 #include "players.h"
 
+#define D_ERROR
+#define D_INFO
+#define D_DEBUG
+
+#ifdef D_ERROR
+  #define pERROR(format, args...) fprintf(stderr, "[ERROR]| "format"\n", args)
+#endif
+#ifdef D_INFO
+  #define pINFO(format, args...)  fprintf(stdout, "[INFO] | "format"\n", args)
+#endif
+#ifdef D_DEBUG
+  #define pDEBUG(format, args...) fprintf(stdout, "[DEBUG]| "format"\n", args)
+#endif
+
+#ifndef D_ERROR
+  #define pERROR(format, args...)
+#endif
+#ifndef D_INFO
+  #define pINFO(format, args...)
+#endif
+#ifndef D_DEBUG
+  #define pDEBUG(format, args...)
+#endif
 
 #ifndef CONNECTIVITY_H_INCLUDED
 #define CONNECTIVITY_H_INCLUDED
@@ -21,6 +44,7 @@
 #define C_TYPE_OK               1
 #define C_TYPE_DISPLAY_CARDS    2
 #define C_TYPE_DISPLAY_ANSWERS  4
+#define C_TYPE_RESET            8
 
 /*typeFlags*/
 
@@ -40,6 +64,7 @@ int connectClient(int mainSocket);                    /*Receive Client Addresses
 void awesomeError(const char *msg);                   /*Personalized error handling*/
 void closeConnections(player_t *head, int mainSocket); /*..close all*/
 int connectToServer(int port, struct hostent* pServer);
+void killServer(pile_t** pile, pile_t** pile1, pile_t** pile2, pile_t** pile3, int socket, player_t** headPlayer, gameState_t* game);
 
 /*data transfer Functions*/
 //int getMessages(player_t* current);

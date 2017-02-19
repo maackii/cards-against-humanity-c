@@ -209,7 +209,6 @@ void printCard(char* originalString, int card_type) {          /* 0 = Answers = 
             printf("*%s\n", RESET);
             currLen = 0;
             start = TRUE;
-
         }
     }
     printf("%s", scheme);

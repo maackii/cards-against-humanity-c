@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include "connectivity.h"
 #include "players.h"
+#include "cardpiles.h"
 
 /*--------------ERROR FLYNN------------------*/
 
@@ -88,6 +89,16 @@ void closeConnections(player_t* head, int mainSocket){
     }
     close(mainSocket);
     return;
+}
+
+void killServer(pile_t** pile, pile_t** pile1, pile_t** pile2, pile_t** pile3, int socket, player_t** headPlayer, gameState_t* game){
+  freePile(pile);
+  freePile(pile1);
+  freePile(pile2);
+  freePile(pile3);
+  closeConnections(*headPlayer, socket);
+  destroyGame(headPlayer, game);
+  return;
 }
 
 int connectClient(int mainSocket){
@@ -259,3 +270,10 @@ int getIntPackage (int socket, uint8_t* payload) {
     return 0;
 }
 */
+
+/*set socket to nonblockin - maybe create own function
+      int status = fcntl(mySockFile, F_SETFL, fcntl(mySockFile, F_GETFL, 0) | O_NONBLOCK);
+      if (status == -1){
+      perror("calling fcntl");
+      // handle the error.
+}*/

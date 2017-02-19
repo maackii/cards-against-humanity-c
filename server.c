@@ -1,20 +1,19 @@
 //#include "read_text.h"
+//#include <string.h>
+//#include <unistd.h>
+//#include <fcntl.h>
+//#include <sys/socket.h>
+//#include <errno.h>
+//#include <sys/types.h>
 #include <stdio.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <sys/types.h>
 #include <stdlib.h>
 #include <netinet/in.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include "players.h"
 #include "cardpiles.h"
 #include "connectivity.h"
 
-
 #define MAX_STR_LEN 512
-#define NUMBER_OF_PLAYERS 2
+
 
 enum stateMachine{
     newRound,
@@ -22,29 +21,22 @@ enum stateMachine{
     waitWinner
 };
 
-//---------------------------------------moved struct to players.h
-/*typedef struct gameState{
-  int numbrRounds;
-  int numbPlayers;
-  int round;
-  int winner;
-  int currentState;
-  int scoreLeader;
-  char* leaderName;
-  int numbExpectedAnswers;
-  char* question;
-}gameState_t;*/
-
+int checkStatus(int players, int ctrl_, player_t** head);
+int sendCtrl(int CTRL_, player_t* head);
+int resetStatus(player_t** head, int ctrl_);
 
 int main(int argc, char* argv[]){
-
     int mySockFile, newConnect, portNumbr;
-    player_t* headPlayer = NULL, *curPlayer = NULL;
+    player_t* headPlayer = NULL, *updatePlayer = NULL;
     pile_t* whiteCards = NULL, *whiteDiscard = NULL, *blackCards = NULL, *blackDiscard = NULL;
 
+
     //------------------------------------------------------REMOVE AFTER TESTING
-    int check;
-    gameState_t game = {0, 0, 0, 0, 0, 0, NULL, 0, NULL };
+    pERROR("I am a test %s", "message");
+    pINFO("I am a test %s", "message");
+    pDEBUG("I am a test %s", "message");
+
+    gameState_t game = {0, 2, 0, 0, 0, 0, NULL, 0, NULL };
     createPile("answers_bearb.txt", &whiteCards, &whiteDiscard);
     createPile("questions_bearb.txt", &blackCards, &blackDiscard);
     card_t* test = NULL;
@@ -61,7 +53,7 @@ int main(int argc, char* argv[]){
 
     /***************************************************Connect & initiate Players array*/
     int n = 0;
-    while (n < NUMBER_OF_PLAYERS){
+    while (n < game.numbPlayers){
         listen(mySockFile,5);
         newConnect = connectClient(mySockFile);
 
@@ -81,67 +73,100 @@ int main(int argc, char* argv[]){
     printf("HOHOHO\n");
     printf("Game winner ID = %d\n", game.winner);
 
-
     switch(game.currentState){
 
         case newRound :
-          game.round++;
-          updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
-          updateQuestion(&game, &blackCards, &blackDiscard);
-          if (game.round > 1){
-              updatePoints(&headPlayer, game.winner);
-              updateRole(&headPlayer);
-              updateLeader(headPlayer, &game);
-          }
-          curPlayer = headPlayer;
-          while (curPlayer!= NULL){
-              /*if(curPlayer->handCards < MAXHANDCARDS){
-                sendDataPackage(curPlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - curPlayer->handCards), curPlayer->cardText );
-                curPlayer->handCards = MAXHANDCARDS;
-              }*/
-              sendDataPackage(curPlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
+            pINFO("Server state %s", "newRound");
+            game.round++;
+            updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
+            updateQuestion(&game, &blackCards, &blackDiscard);
+            if (game.round > 1){
+                updatePoints(&headPlayer, game.winner);
+                updateRole(&headPlayer);
+                updateLeader(headPlayer, &game);
+            }
+            updatePlayer = headPlayer;
+            while (updatePlayer!= NULL){
+                if(updatePlayer->handCards < MAXHANDCARDS){
+                    sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
+                    updatePlayer->handCards = MAXHANDCARDS;
+                }
+                sendDataPackage(updatePlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
+                sendDataPackage(updatePlayer->socketID, D_TYPE_POINTS, updatePlayer->points, 0, NULL);
+                sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
+                updatePlayer = updatePlayer->nextPlayer;
+            }
 
-              if (game.round > 1){
-                sendDataPackage(curPlayer->socketID, D_TYPE_POINTS, curPlayer->points, 0, NULL);
-                sendDataPackage(curPlayer->socketID, D_TYPE_ROLE, curPlayer->role, 0, NULL);
-              }
-        curPlayer = curPlayer->nextPlayer;
-        }
-        break;
+            if (SUCCESS == checkStatus(game.numbPlayers, C_TYPE_OK, &headPlayer)){
+                sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
+                resetStatus(&headPlayer, C_TYPE_RESET);
+                game.currentState = receiveReplies;
+            }
+            break;
+
+        case receiveReplies:
+
+            break;
+
         default :
-         printf("Invalid State\n" );
+            printf("Invalid State\n" );
     }
 
-    freePile(&whiteCards);
-    freePile(&whiteDiscard);
-    closeConnections(headPlayer, mySockFile);
-    destroyGame(&headPlayer, &game);
+    //(&whiteCards, &whiteDiscard, &blackCards, &blackDiscard, mySockFile, &headPlayer, &game);
     return 0;
 }
 
+int checkStatus(int players, int ctrl_, player_t** head){
+    int count = 0;
+    uint8_t check = 0;
+    player_t* current = NULL;
+    while (count < players){
+        current = *head;
+        while (current!=NULL){
+            check = getStatus(current->socketID);
+            if (check == MSG_CTRL){
+                if(SUCCESS == getIntPackage(current->socketID, &check)){
+                    if ( (check == ctrl_) && ((current->status) != ctrl_)){
+                        count++;
+                        current->status = C_TYPE_OK;
+                    }
+                }
+            }
+            current = current->nextPlayer;
+        }
+    }
+    return SUCCESS;
+}
 
-/*if (SUCCESS == sendIntPackage(headPlayer->socketID, CTRL_MESSAGE, OK)){
-  printf("Hurray\n");
-}*/
+int sendCtrl(int ctrl_, player_t* head){
+    player_t* current = NULL;
+    current = head;
+    while (current != NULL){
+        sendIntPackage(current->socketID, MSG_CTRL, ctrl_);
+        current = current->nextPlayer;
+    }
+    return SUCCESS;
+}
 
-/*if(SUCCESS == sendDataPackage(headPlayer->socketID, 13, 0, 5, cards)){
-  printf("Success!\n");
-}*/
+int resetStatus(player_t** head, int ctrl_){
+    player_t *current = NULL;
+    current = *head;
+    while (current != NULL) {
+        current->status = ctrl_;
+        current = current->nextPlayer;
+    }
+    return SUCCESS;
+}
 
-/*set to nonblockin - maybe create own function
-      int status = fcntl(mySockFile, F_SETFL, fcntl(mySockFile, F_GETFL, 0) | O_NONBLOCK);
-      if (status == -1){
-      perror("calling fcntl");
-      // handle the error.
-}*/
+
 
 /*-----------------------------------------------burn after testing
-curPlayer = headPlayer;
-for (int j = 0; j < NUMBER_OF_PLAYERS; j++){
-  for (int i=0; i < NUMBER_OF_PLAYERS; i++){
-  printCard(curPlayer->cardText[i], 1);
+updatePlayer = headPlayer;
+for (int j = 0; j < game.numbPlayers; j++){
+  for (int i=0; i < game.numbPlayers; i++){
+  printCard(updatePlayer->cardText[i], 1);
   printf("\n");
 }
-curPlayer = curPlayer->nextPlayer;
+updatePlayer = updatePlayer->nextPlayer;
 }
 */
