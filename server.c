@@ -1,7 +1,7 @@
 //#include "read_text.h"
 //#include <string.h>
 //#include <unistd.h>
-//#include <fcntl.h>
+#include <fcntl.h>
 //#include <sys/socket.h>
 //#include <errno.h>
 //#include <sys/types.h>
@@ -20,7 +20,7 @@ enum stateMachine{
 };
 /*****************************************************************SERVER FUNCTIONS ADDED*/
 int sendCtrl(int CTRL_, player_t* head);
-int resetStatus(player_t** head, int ctrl_);
+int resetStatus(player_t* head, int ctrl_);
 int sendReplies(player_t* head, gameState_t game);
 int sendPlayerUpdates(player_t* head, gameState_t game);
 /**************************************************************************************/
@@ -71,6 +71,13 @@ int main(int argc, char* argv[]){
     game.winner = headPlayer->socketID;
     game.round = 2;
     /********************************************************start GAME ENGINE*/
+
+    //set socket to nonblockin - maybe create own function
+    int status = fcntl(mySockFile, F_SETFL, fcntl(mySockFile, F_GETFL, 0) | O_NONBLOCK);
+    if (status == -1){
+      perror("calling fcntl");
+    }
+
     while (game.round <= game.numbrRounds) {
       uint8_t check;
       player_t *current = NULL;
@@ -90,7 +97,7 @@ int main(int argc, char* argv[]){
             sendPlayerUpdates(headPlayer, game);
             game.currentState = waitOK;
             sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
-            resetStatus(&headPlayer, C_TYPE_RESET);
+            resetStatus(headPlayer, C_TYPE_RESET);
         break;
 
         case waitOK :
@@ -114,7 +121,7 @@ int main(int argc, char* argv[]){
             if (count == game.numbPlayers){
               game.currentState = waitReplies;
               sendCtrl(C_TYPE_DISPLAY_CARDS, headPlayer);
-              resetStatus(&headPlayer, C_TYPE_RESET);
+              resetStatus(headPlayer, C_TYPE_RESET);
               count = 0;
             }
         break;
@@ -136,9 +143,9 @@ int main(int argc, char* argv[]){
               }
               current = current->nextPlayer;
             }
-            if (count == game.numbPlayers){
-              //pDEBUG("SERVER %s" "Reached Condition to change to waitWinner");
-              //resetStatus(&headPlayer, C_TYPE_RESET);
+            if (count == (game.numbPlayers-1)){
+              pDEBUG("SERVER %s", "Reached Condition to change to waitWinner");
+              resetStatus(headPlayer, C_TYPE_RESET);
               game.currentState = waitWinner;
               //sendReplies(headPlayer, game);
               //sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
@@ -176,9 +183,9 @@ int sendCtrl(int ctrl_, player_t* head){
       return SUCCESS;
 }
 
-int resetStatus(player_t** head, int ctrl_){
-        player_t *current = NULL;
-        current = *head;
+int resetStatus(player_t* head, int ctrl_){
+        player_t* current = NULL;
+        current = head;
         while (current != NULL) {
             current->status = ctrl_;
             current = current->nextPlayer;
@@ -186,16 +193,7 @@ int resetStatus(player_t** head, int ctrl_){
         return SUCCESS;
 }
 
-int sendReplies(player_t* head, gameState_t game){
-  player_t* current = NULL;
-  current = head;
-  while (current != NULL){
-      sendDataPackage(current->socketID, D_TYPE_REPLIES, current->socketID, game.numbExpectedAnswers, current->replies);
-      pINFO("Server: Sent %s", "replies");
-      current = current->nextPlayer;
-  }
-  return SUCCESS;
-}
+
 
 int sendPlayerUpdates(player_t* head, gameState_t game){
   player_t* current = NULL;
