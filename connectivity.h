@@ -33,7 +33,7 @@
 #define ERROR -1
 #define SUCCESS 1
 
-#define SHOW_ERROR_HANDLING 1
+#define SHOW_ERROR_HANDLING 0
 
 /*bitflags & ctrl messages*/
 
@@ -54,6 +54,7 @@
 #define D_TYPE_POINTS     4
 #define D_TYPE_ROLE       8
 #define D_TYPE_REPLIES   16
+#define D_TYPE_WINNER    32
 
 /*ERROR HANDLING*/
 void gimme_good_lines(char *message, int line);
