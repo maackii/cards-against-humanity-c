@@ -18,11 +18,12 @@ enum stateMachine{
     waitReplies,
     waitWinner
 };
-
+/*****************************************************************SERVER FUNCTIONS ADDED*/
 int sendCtrl(int CTRL_, player_t* head);
 int resetStatus(player_t** head, int ctrl_);
 int sendReplies(player_t* head, gameState_t game);
 int sendPlayerUpdates(player_t* head, gameState_t game);
+/**************************************************************************************/
 
 int main(int argc, char* argv[]){
     int mySockFile, newConnect, portNumbr;
@@ -93,11 +94,13 @@ int main(int argc, char* argv[]){
         break;
 
         case waitOK :
-            pINFO("Server state %s", "waitOK");
-            check = 0;
-            current = NULL;
-            current = headPlayer;
-            while (current != NULL) {
+          current = NULL;
+          check = 0;
+          pINFO("Server state %s", "waitOK");
+
+
+          current = headPlayer;
+          while (current != NULL) {
               if ( (MSG_CTRL == getStatus(current->socketID)) && ((current->status) != C_TYPE_OK)) {
                 if (SUCCESS == getIntPackage(current->socketID, &check)) {
                   if ((check == C_TYPE_OK) ) {
@@ -106,7 +109,6 @@ int main(int argc, char* argv[]){
                   }
                 }
               }
-
             current = current->nextPlayer;
             }
             if (count == game.numbPlayers){
@@ -134,10 +136,11 @@ int main(int argc, char* argv[]){
               current = current->nextPlayer;
             }
             if (count == game.numbPlayers){
-              resetStatus(&headPlayer, C_TYPE_RESET);
+              //pDEBUG("SERVER %s" "Reached Condition to change to waitWinner");
+              //resetStatus(&headPlayer, C_TYPE_RESET);
               game.currentState = waitWinner;
-              sendReplies(headPlayer, game);
-              sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
+              //sendReplies(headPlayer, game);
+              //sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
               count = 0;
             }
         break;
@@ -145,7 +148,8 @@ int main(int argc, char* argv[]){
         case waitWinner:
             current = NULL;
             check = 0;
-            pINFO("Server state %s", "waitReplies");
+            pINFO("Server state %s", "waitWinner");
+            exit(-1);
 
 
         break;
@@ -155,7 +159,6 @@ int main(int argc, char* argv[]){
             printf("Invalid State\n");
         }
     }
-
 
     killServer(&whiteCards, &whiteDiscard, &blackCards, &blackDiscard, mySockFile, &headPlayer, &game);
     return 0;
@@ -187,7 +190,7 @@ int sendReplies(player_t* head, gameState_t game){
   current = head;
   while (current != NULL){
       sendDataPackage(current->socketID, D_TYPE_REPLIES, current->socketID, game.numbExpectedAnswers, current->replies);
-      pINFO("Server: Sent %s", "question");
+      pINFO("Server: Sent %s", "replies");
       current = current->nextPlayer;
   }
   return SUCCESS;
