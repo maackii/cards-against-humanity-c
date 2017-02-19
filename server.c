@@ -106,12 +106,13 @@ int main(int argc, char* argv[]){
                   }
                 }
               }
-            //if check get status === KILL --->  DO KILL SERVER
+
             current = current->nextPlayer;
             }
             if (count == game.numbPlayers){
               game.currentState = waitReplies;
               sendCtrl(C_TYPE_DISPLAY_CARDS, headPlayer);
+              resetStatus(&headPlayer, C_TYPE_RESET);
               count = 0;
             }
         break;
