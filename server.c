@@ -45,8 +45,8 @@ int main(int argc, char* argv[]){
     //------------------------------------------------------REMOVE AFTER TESTING
     int check;
     gameState_t game = {0, 0, 0, 0, 0, 0, NULL, 0, NULL };
-    createPile("answ.txt", &whiteCards, &whiteDiscard);
-    createPile("quest.txt", &blackCards, &blackDiscard);
+    createPile("answers_bearb.txt", &whiteCards, &whiteDiscard);
+    createPile("questions_bearb.txt", &blackCards, &blackDiscard);
     card_t* test = NULL;
     char* cards[] = {"hey", "We","Are", "Some", "Cards"};
     printf("Number of Cards: %d\n", whiteCards->cnt);
