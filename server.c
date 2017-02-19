@@ -60,6 +60,7 @@ int main(int argc, char* argv[]){
         if (newConnect>0){
             headPlayer = createPlayer(headPlayer, newConnect); /*create player bekommt die socket ID*/
             headPlayer->socketID = newConnect;
+            fcntl(newConnect, F_SETFL, fcntl(newConnect, F_GETFL, 0) | O_NONBLOCK);
             n++;
             printf("Client [%d] has val: %d\n", n, headPlayer->socketID);
         }
