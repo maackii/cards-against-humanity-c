@@ -21,6 +21,8 @@ enum stateMachine{
 
 int sendCtrl(int CTRL_, player_t* head);
 int resetStatus(player_t** head, int ctrl_);
+int sendReplies(player_t* head, gameState_t game);
+int sendPlayerUpdates(player_t* head, gameState_t game);
 
 int main(int argc, char* argv[]){
     int mySockFile, newConnect, portNumbr;
@@ -84,21 +86,7 @@ int main(int argc, char* argv[]){
                 updateRole(&headPlayer);
                 updateLeader(headPlayer, &game);
             }
-            updatePlayer = headPlayer;
-            while (updatePlayer != NULL) {
-              if(updatePlayer->handCards < MAXHANDCARDS){
-                  sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
-                  pINFO("Server: Sent %s", "handcards");
-                  updatePlayer->handCards = MAXHANDCARDS;
-              }
-              sendDataPackage(updatePlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
-              pINFO("Server: Sent %s", "question");
-              sendDataPackage(updatePlayer->socketID, D_TYPE_POINTS, updatePlayer->points, 0, NULL);
-              pINFO("Server: Sent %s", "points");
-              sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
-              pINFO("Server: Sent %s", "role");
-              updatePlayer = updatePlayer->nextPlayer;
-            }
+            sendPlayerUpdates(headPlayer, game);
             game.currentState = waitOK;
             sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
             resetStatus(&headPlayer, C_TYPE_RESET);
@@ -147,20 +135,25 @@ int main(int argc, char* argv[]){
             if (count == game.numbPlayers){
               resetStatus(&headPlayer, C_TYPE_RESET);
               game.currentState = waitWinner;
+              sendReplies(headPlayer, game);
+              sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
               count = 0;
-              }
-              break;
+            }
+        break;
 
-              case waitWinner:
-                  current = NULL;
-                  check = 0;
-                  pINFO("Server state %s", "waitReplies");
+        case waitWinner:
+            current = NULL;
+            check = 0;
+            pINFO("Server state %s", "waitReplies");
 
 
-              default :
-                        printf("Invalid State\n");
-                }
+        break;
+
+
+        default :
+            printf("Invalid State\n");
         }
+    }
 
 
     killServer(&whiteCards, &whiteDiscard, &blackCards, &blackDiscard, mySockFile, &headPlayer, &game);
@@ -168,17 +161,17 @@ int main(int argc, char* argv[]){
 }
 
 
-    int sendCtrl(int ctrl_, player_t* head){
-        player_t* current = NULL;
-        current = head;
-        while (current != NULL){
-            sendIntPackage(current->socketID, MSG_CTRL, ctrl_);
-            current = current->nextPlayer;
-        }
-        return SUCCESS;
-    }
+int sendCtrl(int ctrl_, player_t* head){
+      player_t* current = NULL;
+      current = head;
+      while (current != NULL){
+          sendIntPackage(current->socketID, MSG_CTRL, ctrl_);
+          current = current->nextPlayer;
+      }
+      return SUCCESS;
+}
 
-    int resetStatus(player_t** head, int ctrl_){
+int resetStatus(player_t** head, int ctrl_){
         player_t *current = NULL;
         current = *head;
         while (current != NULL) {
@@ -186,8 +179,38 @@ int main(int argc, char* argv[]){
             current = current->nextPlayer;
         }
         return SUCCESS;
-    }
+}
 
+int sendReplies(player_t* head, gameState_t game){
+  player_t* current = NULL;
+  current = head;
+  while (current != NULL){
+      sendDataPackage(current->socketID, D_TYPE_REPLIES, current->socketID, game.numbExpectedAnswers, current->replies);
+      pINFO("Server: Sent %s", "question");
+      current = current->nextPlayer;
+  }
+  return SUCCESS;
+}
+
+int sendPlayerUpdates(player_t* head, gameState_t game){
+  player_t* current = NULL;
+  current = head;
+  while (current != NULL){
+      if(current->handCards < MAXHANDCARDS){
+          sendDataPackage(current->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - current->handCards), current->cardText );
+          pINFO("Server: Sent %s", "handcards");
+          current->handCards = MAXHANDCARDS;
+      }
+      sendDataPackage(current->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
+      pINFO("Server: Sent %s", "question");
+      sendDataPackage(current->socketID, D_TYPE_POINTS, current->points, 0, NULL);
+      pINFO("Server: Sent %s", "points");
+      sendDataPackage(current->socketID, D_TYPE_ROLE, current->role, 0, NULL);
+      pINFO("Server: Sent %s", "role");
+      current = current->nextPlayer;
+  }
+return SUCCESS;
+}
 
 /*-----------------------------------------------burn after testing
 updatePlayer = headPlayer;
