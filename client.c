@@ -475,6 +475,7 @@ int main(int argc, char* argv[]) {
     game.round = 2;
     game.scoreLeader = 3;
     game.numbPlayers = 5;
+    game.numbExpectedAnswers = 2;
 
 
     create_playerArray(&player, game);
