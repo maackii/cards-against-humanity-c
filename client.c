@@ -223,7 +223,7 @@ void update_status(player_t *player, gameState_t *game){
 
             numb_messg = getDataPackage(player->socketID, &recMessages, &typeID);
             gimme_good_lines("", __LINE__);
-            free(game->question);
+            //free(game->question);
             game->question = malloc(strlen(recMessages[0]) * sizeof(char));
             strcpy(game->question, recMessages[0]);
 
@@ -340,7 +340,7 @@ int main(int argc, char* argv[]) {
     create_playerArray(&player, game);
 
     //While loop
-    while(break_loop < 7) {
+    while(break_loop < 10) {
 
         // Status Update
         //ctrl = 111;
@@ -393,6 +393,7 @@ int main(int argc, char* argv[]) {
                     sendDataPackage(player.socketID, D_TYPE_HANDCARDS, (uint8_t) player.socketID, gaps(game.question), player.replies);
                     printf("sent replies to server..\n");
                 }
+                ctrl = 111;
                 break;
 
 
