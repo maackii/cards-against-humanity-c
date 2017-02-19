@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,13 +11,6 @@
 
 #define HANDCARDS_MAX 5
 
-/*linked list for answers
-struct answerCollect{
-  int playerID;
-  char** answers;
-};
-*/
-
 void create_playerArray(player_t *player, gameState_t game){
     player_t *curPlayer = NULL;
     player_t *head = NULL;
@@ -27,56 +21,6 @@ void create_playerArray(player_t *player, gameState_t game){
         curPlayer = head;
     }
     player->nextPlayer = head;
-}
-
-
-void newRound_prompt(player_t *player, gameState_t game){
-    player_t *curPlayer;
-
-    if(game.round > 1){
-
-        gimme_good_lines("is ctrl message\n", __LINE__);
-
-        printf("\n**********************************************\n"
-                       "Welcome to a new Round CARDS AGAINST HUMANITY!\n");
-
-        for(curPlayer = player; curPlayer->socketID != game.winner; curPlayer = curPlayer->nextPlayer){
-            printf("Last rounds' winner was %s.\n", "Sabine");
-
-            gimme_good_lines("is ctrl message\n", __LINE__);
-        }
-
-        if(game.scoreLeader == player->points){
-
-            gimme_good_lines("is ctrl message\n", __LINE__);
-
-            printf("Congrats, you are (one of) the Player(s) with the current top score.\n");
-        }
-        else{
-
-            gimme_good_lines("is ctrl message\n", __LINE__);
-
-            printf("Current leading Player is %s with %d points.\n"
-                           "You have currently %d points.\n", game.leaderName, game.scoreLeader, player->points);
-
-        }
-
-        if(player->role == CARDCZAR){
-
-            gimme_good_lines("is ctrl message\n", __LINE__);
-
-            printf("For the following round you are the CARDCZAR.\n");
-        }else{
-
-            gimme_good_lines("is ctrl message\n", __LINE__);
-
-            printf("For the upcoming round you are a regular Player\n");
-        }
-
-    }else{
-        printf("************************************************\nWelcome to a new game of CARDS AGAINST HUMANITY!\n"
-                       "Good luck and have the most fun while playing this 'unforgivable' game!\n");
-    }
 }
 
 // wählt antworten aus handcards, löscht diese nach auswahl aus handcards und fügt sie zu replies hinzu
@@ -167,9 +111,10 @@ void chooseSend_bestReply(player_t *player, gameState_t game){
     sendDataPackage(player->socketID, D_TYPE_WINNER, winnerID, 0, NULL);
 }
 
-uint8_t ok_cardnumber(player_t *player){
+uint8_t ok_cardNumber(player_t *player){
 
-    if(player->handCards == HANDCARDS_MAX){
+    if(player->handCards == MAXHANDCARDS){
+        printf("number handCards is ok!\n");
         return 1;
     }
     else return 0;
@@ -182,18 +127,10 @@ void update_status(player_t *player, gameState_t *game){
     char** recMessages/*[] = {"bli", "bla", "blubb", "blopp", "bleh"}*/;
     player_t *curPlayer = NULL;
 
-
     gimme_good_lines("", __LINE__);
 
     printf("received data type message(s)!\n");
     typeFlag = getStatus(player->socketID);
-
-    //printf("typeFlag is: %d\n", typeFlag);        //testing
-
-    /*for (int i = 0; i < cnt; i++){
-        printf("%s\n", recMessages[i]);
-    }*/
-    //typeID = D_TYPE_HANDCARDS;
 
     gimme_good_lines("", __LINE__);
 
@@ -220,10 +157,6 @@ void update_status(player_t *player, gameState_t *game){
                 }
             }
 
-            /*for(i = 0; i < 5; i++){
-                if(player->cardText[i] != NULL)
-                    printCard(player->cardText[i], 0);
-            }*/
             printf("number of handcards: %d\n", player->handCards);
             break;
 
@@ -283,52 +216,6 @@ void update_status(player_t *player, gameState_t *game){
                     perror("error while searching player in player array to save received replies.\n");
                 }
             }
-
-            /*gimme_good_lines("", __LINE__);
-            for(curPlayer = player->nextPlayer, i = 0; i < game->numbPlayers && curPlayer->socketID != typeID && curPlayer->nextPlayer != NULL; i++, curPlayer = curPlayer->nextPlayer){
-                printf("typeID: %d, in loop no. %d, curPlayer_ID: %2d &nextPlayer: %p\n", typeID, i, curPlayer->socketID, curPlayer->nextPlayer);
-            }
-            gimme_good_lines("", __LINE__);
-            if( (curPlayer->socketID) == (int) typeID){
-                gimme_good_lines("", __LINE__);
-                printf("found player with ID %d, filling in replies now....", typeID);
-
-                //bisherige antworten löschen
-                for(i = 0; i < MAXREPLIES; i++){
-                    free(curPlayer->replies[i]);
-                    curPlayer->replies[i] = NULL;
-                    gimme_good_lines("", __LINE__);
-                }
-
-                //fill replies
-                for(i = 0; i < numb_messg; i++){
-                    curPlayer->replies[i] = malloc(strlen(recMessages[i]) * sizeof(char));
-                    strcpy(curPlayer->replies[i], recMessages[i]);
-                    gimme_good_lines("", __LINE__);
-                }
-
-
-            }else{
-                gimme_good_lines("", __LINE__);
-                printf("found no player with ID %d, searching for blank player....", typeID);
-                for(curPlayer = player, i = 0; i < game->numbPlayers && curPlayer->socketID != -1 &&  curPlayer->nextPlayer != NULL; i++, curPlayer = curPlayer->nextPlayer);
-
-                if(curPlayer->socketID == -1){
-                    gimme_good_lines("", __LINE__);
-                    printf("found blank player filling in replies....");
-                    curPlayer->socketID = typeID;
-
-                    for(i = 0; i < numb_messg; i++){
-                        curPlayer->replies[i] = malloc(strlen(recMessages[i]) * sizeof(char));
-                        strcpy(curPlayer->replies[i], recMessages[i]);
-                        gimme_good_lines("", __LINE__);
-                    }
-
-                }else{
-                    gimme_good_lines("", __LINE__);
-                    perror("error while searching player in player array to save received replies.\n");
-                }
-            }*/
 
             break;
 
@@ -426,35 +313,6 @@ int main(int argc, char* argv[]) {
 
 //-------------------connect client end---------------------------
 
-    //---test---test---test---test---test---test---test---test---test---test----
-    /*if (MSG_DATA == getStatus(player.socketID)){
-      typeFlag = getStatus(player.socketID);
-      printf("I am type Flag: %d\n", typeFlag);
-      cnt = getDataPackage(player.socketID, &recMessages, &typeID);
-        printf("Success\n");
-        for (int i = 0; i < cnt; i++){
-          printf("%s\n", recMessages[i]);
-        }
-
-      }*/
-
-
-    /*type = getStatus(player.socketID);
-    if (type == MSG_CTRL_MESSAGE){
-      if (SUCCESS == getIntPackage(player.socketID, &instruction)){
-        printf("Ctrl Message number %d\n", instruction);
-      }
-    }*/
-
-    //---test---test---test---test---test---test---test---test---test---test----
-
-
-
-
-
-
-
-
 
 //----------------------------STATE MACHINE START--------------------------------
 
@@ -475,6 +333,7 @@ int main(int argc, char* argv[]) {
     game.round = 2;
     game.scoreLeader = 3;
     game.numbPlayers = 5;
+    game.numbExpectedAnswers = 2;
 
 
     create_playerArray(&player, game);
@@ -513,20 +372,12 @@ int main(int argc, char* argv[]) {
 
             // Display new Round / New Game prompt / display winner & game status
             case C_TYPE_NEW_ROUND:
-                //Check if first round
-
-                //Show new Round prompt
-                //newRound_prompt(&player, game);
-
-                //Check number of cards
-
                 //CTRL send ok if number of cards == 5
-                if(ok_cardnumber(&player)){
+                if(1 == ok_cardNumber(&player)){
                     sendIntPackage(player.socketID, MSG_CTRL, C_TYPE_OK);
                     printf("Sended Cardnumber-OK to Server \n");
                 }
                 break;
-
 
                 //Choose & send funny answers
             case C_TYPE_DISPLAY_CARDS:
@@ -534,11 +385,13 @@ int main(int argc, char* argv[]) {
                 display_cards(player, game);
                 //choose funny answer(s)
                 gimme_good_lines("", __LINE__);
-                choose_replies(&player, gaps(game.question));
-                gimme_good_lines("", __LINE__);
-                //send funny answer(s)
-                sendDataPackage(player.socketID, D_TYPE_HANDCARDS, (uint8_t ) player.socketID, gaps(game.question), player.replies);
-
+                if(player.role == PLAYER) {
+                    choose_replies(&player, gaps(game.question));
+                    gimme_good_lines("", __LINE__);
+                    //send funny answer(s)
+                    sendDataPackage(player.socketID, D_TYPE_HANDCARDS, (uint8_t) player.socketID, gaps(game.question), player.replies);
+                    printf("sended replies to server..\n");
+                }
                 break;
 
 
@@ -563,11 +416,6 @@ int main(int argc, char* argv[]) {
     }
 
 //----------------------------STATE MACHINE END--------------------------------
-
-
-
-
-
 
     close(player.socketID);
 
