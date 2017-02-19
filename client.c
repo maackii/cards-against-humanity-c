@@ -136,10 +136,41 @@ void display_cards(player_t player, gameState_t game){
 
 }
 
+void display_replies(player_t *player, gameState_t game){
+    player_t *curPlayer = NULL;
+    int i, j;
+
+    for(i = 0, curPlayer = player->nextPlayer; curPlayer != NULL; curPlayer = curPlayer->nextPlayer, i++){
+        printf("[%d]", i);
+        for(j = 0; j < game.numbExpectedAnswers; j++) {
+            printf(" %s", curPlayer->replies[j]);
+        }
+    }
+}
+
+void chooseSend_bestReply(player_t *player, gameState_t game){
+    int scan, check_input, i;
+    uint8_t winnerID;
+    player_t *curPlayer = NULL;
+
+    printf("Please choose best answer(s) [Type 1-%d]\n", game.numbPlayers);
+    scanf("%d", &scan);
+    check_input = scan;
+
+    if(check_input < 1 || check_input > game.numbPlayers){
+        printf("Wrong input. Please choose number between 1 and %d.\n", game.numbPlayers);
+    }
+
+    for(i = 0, curPlayer = player->nextPlayer; i < scan; i++, curPlayer = curPlayer->nextPlayer);
+    winnerID = (uint8_t ) curPlayer->socketID;
+
+    sendDataPackage(player->socketID, D_TYPE_WINNER, winnerID, 0, NULL);
+}
+
 uint8_t ok_cardnumber(player_t *player){
 
     if(player->handCards == HANDCARDS_MAX){
-        return C_TYPE_OK;
+        return 1;
     }
     else return 0;
 }
@@ -198,9 +229,32 @@ void update_status(player_t *player, gameState_t *game){
 
         case D_TYPE_REPLIES:
 
+            player->nextPlayer->socketID = 5;
             numb_messg = getDataPackage(player->socketID, &recMessages, &typeID);
-            gimme_good_lines("", __LINE__);
-            for(curPlayer = player, i = 0; i < game->numbPlayers && curPlayer->socketID != typeID && curPlayer->nextPlayer != NULL; i++, curPlayer = curPlayer->nextPlayer){
+
+            for(curPlayer = player->nextPlayer; curPlayer->nextPlayer != NULL && curPlayer->socketID != typeID; curPlayer = curPlayer->nextPlayer){
+                printf("typeID: %d, curPlayer_ID: %2d &nextPlayer: %p\n", typeID, curPlayer->socketID, curPlayer->nextPlayer);
+            }
+                printf("außen typeID: %d, curPlayer_ID: %2d &nextPlayer: %p\n", typeID, curPlayer->socketID, curPlayer->nextPlayer);
+
+            if(curPlayer->socketID == typeID){
+                for(i = 0; i < MAXREPLIES; i++){
+                    free(curPlayer->replies[i]);
+                    curPlayer->replies[i] = NULL;
+                    gimme_good_lines("", __LINE__);
+                }
+                for(i = 0; i < numb_messg; i++){
+                    curPlayer->replies[i] = malloc(strlen(recMessages[i]) * sizeof(char));
+                    strcpy(curPlayer->replies[i], recMessages[i]);
+                    gimme_good_lines("", __LINE__);
+                }
+                for(i = 0; i < numb_messg; i++){
+                    printf("REPLIES OF PLAYER %d: %s\n",curPlayer->socketID, curPlayer->replies[i]);
+                }
+            }
+
+            /*gimme_good_lines("", __LINE__);
+            for(curPlayer = player->nextPlayer, i = 0; i < game->numbPlayers && curPlayer->socketID != typeID && curPlayer->nextPlayer != NULL; i++, curPlayer = curPlayer->nextPlayer){
                 printf("typeID: %d, in loop no. %d, curPlayer_ID: %2d &nextPlayer: %p\n", typeID, i, curPlayer->socketID, curPlayer->nextPlayer);
             }
             gimme_good_lines("", __LINE__);
@@ -243,7 +297,7 @@ void update_status(player_t *player, gameState_t *game){
                     gimme_good_lines("", __LINE__);
                     perror("error while searching player in player array to save received replies.\n");
                 }
-            }
+            }*/
 
             break;
 
@@ -393,7 +447,7 @@ int main(int argc, char* argv[]) {
     while(break_loop < 7) {
 
         // Status Update
-        ctrl = 111;
+        //ctrl = 111;
         data_type = getStatus(player.socketID);
 
         //data_type = MSG_DATA;  //just for testing
@@ -431,6 +485,9 @@ int main(int argc, char* argv[]) {
                 //Check number of cards
 
                 //CTRL send ok if number of cards == 5
+                if(ok_cardnumber(&player)){
+                    sendIntPackage(player.socketID, MSG_CTRL, C_TYPE_OK);
+                }
                 break;
 
 
@@ -453,14 +510,10 @@ int main(int argc, char* argv[]) {
                 //get all funny answers
 
                 //display all funny answers to all (shuffled)
-
+                display_replies(&player, game);
                 //Czar chooses winner
-
                 //Czar sends winner to server
-                break;
-
-            case C_TYPE_OK:     //sends 1 if number of cards ok, sends 0 if not
-                sendIntPackage(player.socketID, MSG_CTRL, ok_cardnumber(&player));
+                chooseSend_bestReply(&player, game);
                 break;
 
             default:
