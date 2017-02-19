@@ -259,3 +259,10 @@ int getIntPackage (int socket, uint8_t* payload) {
     return 0;
 }
 */
+
+/*set socket to nonblockin - maybe create own function
+      int status = fcntl(mySockFile, F_SETFL, fcntl(mySockFile, F_GETFL, 0) | O_NONBLOCK);
+      if (status == -1){
+      perror("calling fcntl");
+      // handle the error.
+}*/
