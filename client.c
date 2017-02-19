@@ -17,13 +17,15 @@ struct answerCollect{
 };
 */
 
-void create_player_Array(player_t *player, gameState_t game){
+void create_playerArray(player_t *player, gameState_t game){
     player_t *curPlayer = NULL;
+    player_t *head = NULL;
     int i;
 
-    for(i = 0; i < game.numbPlayers; i++){
-
+    for(i = 0; i < (game.numbPlayers -1); i++){
+        head = createPlayer(curPlayer, -1);
     }
+    player->nextPlayer = head;
 }
 
 
@@ -146,6 +148,7 @@ void update_status(player_t *player, gameState_t *game){
     uint8_t typeFlag = -1, typeID = -1, getInt = 111;
     int numb_messg = 0, i = 0, j = 0;
     char** recMessages/*[] = {"bli", "bla", "blubb", "blopp", "bleh"}*/;
+    player_t *curPlayer = NULL;
 
 
     gimme_good_lines("", __LINE__);
@@ -196,9 +199,45 @@ void update_status(player_t *player, gameState_t *game){
 
             numb_messg = getDataPackage(player->socketID, &recMessages, &typeID);
 
-            //delete content / old replies of player x
+            for(curPlayer = player, i = 0; i < game->numbPlayers && curPlayer->socketID != typeID; i++, curPlayer = curPlayer->nextPlayer);
 
-            //write new replies of cur. player
+            if(curPlayer->socketID == typeID){
+
+                printf("found player with ID %d, filling in replies now....", typeID);
+
+                //bisherige antworten löschen
+                for(i = 0; i < MAXREPLIES; i++){
+                    free(curPlayer->replies[i]);
+                    curPlayer->replies[i] = NULL;
+
+                }
+
+                //fill replies
+                for(i = 0; i < numb_messg; i++){
+                    curPlayer->replies[i] = malloc(strlen(recMessages[i]) * sizeof(char));
+                    strcpy(curPlayer->replies[i], recMessages[i]);
+                }
+
+
+            }else{
+
+                printf("found no player with ID %d, searching blank player....", typeID);
+                for(curPlayer = player, i = 0; i < game->numbPlayers && curPlayer->socketID != -1; i++, curPlayer = curPlayer->nextPlayer);
+
+                if(curPlayer->socketID == -1){
+
+                    printf("found blank player filling in replies....");
+                    curPlayer->socketID = typeID;
+
+                    for(i = 0; i < numb_messg; i++){
+                        curPlayer->replies[i] = malloc(strlen(recMessages[i]) * sizeof(char));
+                        strcpy(curPlayer->replies[i], recMessages[i]);
+                    }
+
+                }else{
+                    perror("error while searching player in player array to save received replies.\n");
+                }
+            }
 
             break;
 
@@ -339,7 +378,10 @@ int main(int argc, char* argv[]) {
     game.winner = 0;
     game.round = 2;
     game.scoreLeader = 3;
+    game.numbPlayers = 5;
 
+
+    create_playerArray(&player, game);
 
     //While loop
     while(break_loop < 7) {
