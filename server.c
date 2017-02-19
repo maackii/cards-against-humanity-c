@@ -21,7 +21,7 @@ enum stateMachine{
 /*****************************************************************SERVER FUNCTIONS ADDED*/
 int sendCtrl(int CTRL_, player_t* head);
 int resetStatus(player_t* head, int ctrl_);
-int sendReplies(player_t* head, gameState_t game);
+int sendReplies(player_t* head, int numbReplies);
 int sendPlayerUpdates(player_t* head, gameState_t game);
 /**************************************************************************************/
 
@@ -72,12 +72,6 @@ int main(int argc, char* argv[]){
     game.winner = headPlayer->socketID;
     game.round = 2;
     /********************************************************start GAME ENGINE*/
-
-    //set socket to nonblockin - maybe create own function
-    int status = fcntl(mySockFile, F_SETFL, fcntl(mySockFile, F_GETFL, 0) | O_NONBLOCK);
-    if (status == -1){
-      perror("calling fcntl");
-    }
 
     while (game.round <= game.numbrRounds) {
       uint8_t check;
@@ -148,8 +142,8 @@ int main(int argc, char* argv[]){
               pDEBUG("SERVER %s", "Reached Condition to change to waitWinner");
               resetStatus(headPlayer, C_TYPE_RESET);
               game.currentState = waitWinner;
-              //sendReplies(headPlayer, game);
-              //sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
+              sendReplies(headPlayer, game.numbExpectedAnswers);
+              sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
               count = 0;
             }
         break;
@@ -194,7 +188,19 @@ int resetStatus(player_t* head, int ctrl_){
         return SUCCESS;
 }
 
-
+int sendReplies(player_t* head, int numbReplies){
+  player_t* current = NULL;
+  player_t* curRepl = NULL;
+  int tempSocket;
+  for (current = head; current != NULL ; current = current->nextPlayer){
+    tempSocket = current->socketID;
+    for(curRepl = head; curRepl != NULL; curRepl = curRepl->nextPlayer){
+        sendDataPackage(tempSocket, D_TYPE_REPLIES, curRepl->socketID, numbReplies, current->replies);
+        pINFO("Server: Sent %s", "replies");
+    }
+  }
+  return SUCCESS;
+}
 
 int sendPlayerUpdates(player_t* head, gameState_t game){
   player_t* current = NULL;
