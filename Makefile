@@ -11,7 +11,7 @@ connectserver: server.o cardpiles.o $(OBJS)
 	$(CC) -o connectserver server.o cardpiles.o $(OBJS)
 
 connectclient: client.o connectivity.o cardpiles.o $(OBJS)
-	$(CC) -o connectclient client.o connectivity.o cardpiles.o
+	$(CC) -o connectclient client.o connectivity.o cardpiles.o players.o
 
 server.o : server.c $(DEPS) cardpiles.h
 	$(CC) -c server.c
