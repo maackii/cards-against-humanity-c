@@ -9,6 +9,7 @@ all: connectserver connectclient
 
 connectserver: server.o cardpiles.o $(OBJS)
 	$(CC) -o connectserver server.o cardpiles.o $(OBJS)
+
 connectclient: client.o connectivity.o cardpiles.o $(OBJS)
 	$(CC) -o connectclient client.o connectivity.o cardpiles.o
 
