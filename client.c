@@ -17,10 +17,63 @@ struct answerCollect{
 };
 */
 
-void add_to_playerList(player_t *headPlayer, int socketID){
+void create_player_Array(player_t *player, gameState_t game){
+    player_t *curPlayer = NULL;
     int i;
 
+    for(i = 0; i < game.numbPlayers; i++){
 
+    }
+}
+
+
+void newRound_prompt(player_t *player, gameState_t game){
+    player_t *curPlayer;
+
+    if(game.round > 1){
+
+        gimme_good_lines("is ctrl message\n", __LINE__);
+
+        printf("\n**********************************************\n"
+                       "Welcome to a new Round CARDS AGAINST HUMANITY!\n");
+
+        for(curPlayer = player; curPlayer->socketID != game.winner; curPlayer = curPlayer->nextPlayer){
+            printf("Last rounds' winner was %s.\n", "Sabine");
+
+            gimme_good_lines("is ctrl message\n", __LINE__);
+        }
+
+        if(game.scoreLeader == player->points){
+
+            gimme_good_lines("is ctrl message\n", __LINE__);
+
+            printf("Congrats, you are (one of) the Player(s) with the current top score.\n");
+        }
+        else{
+
+            gimme_good_lines("is ctrl message\n", __LINE__);
+
+            printf("Current leading Player is %s with %d points.\n"
+                           "You have currently %d points.\n", game.leaderName, game.scoreLeader, player->points);
+
+        }
+
+        if(player->role == CARDCZAR){
+
+            gimme_good_lines("is ctrl message\n", __LINE__);
+
+            printf("For the following round you are the CARDCZAR.\n");
+        }else{
+
+            gimme_good_lines("is ctrl message\n", __LINE__);
+
+            printf("For the upcoming round you are a regular Player\n");
+        }
+
+    }else{
+        printf("************************************************\nWelcome to a new game of CARDS AGAINST HUMANITY!\n"
+                       "Good luck and have the most fun while playing this 'unforgivable' game!\n");
+    }
 }
 
 // wählt antworten aus handcards, löscht diese nach auswahl aus handcards und fügt sie zu replies hinzu
@@ -234,7 +287,7 @@ int main(int argc, char* argv[]) {
         //awesomeError("Could not create socket!");
         exit(-1);
     }
-    printf("I am connected\n");
+    printf("I am connected with the ID %d\n", player.socketID);
 
 //-------------------connect client end---------------------------
 
@@ -261,6 +314,13 @@ int main(int argc, char* argv[]) {
     //---test---test---test---test---test---test---test---test---test---test----
 
 
+
+
+
+
+
+
+
 //----------------------------STATE MACHINE START--------------------------------
 
     //awesome variables
@@ -273,6 +333,12 @@ int main(int argc, char* argv[]) {
     for(i = 0; i < 5; i++){
         player.cardText[i] = NULL;
     }
+    //initialize game & player for prompt testing
+    player.points = 3;
+    game.leaderName = "Nemo";
+    game.winner = 0;
+    game.round = 2;
+    game.scoreLeader = 3;
 
 
     //While loop
@@ -284,10 +350,12 @@ int main(int argc, char* argv[]) {
 
         //data_type = MSG_DATA;  //just for testing
 
+        //NEEDED INFOS: topScore, name of topPlayer, own curPoints, curQuest, roundNumb, numbPlayers
+
 
         if(MSG_CTRL == data_type) {
 
-            gimme_good_lines("is ctrl message\n", __LINE__);
+            gimme_good_lines("is ctrl message", __LINE__);
             getIntPackage(player.socketID, &ctrl);
 
         }else if(MSG_DATA == data_type){
@@ -308,6 +376,9 @@ int main(int argc, char* argv[]) {
             // Display new Round / New Game prompt / display winner & game status
             case C_TYPE_NEW_ROUND:
                 //Check if first round
+
+                //Show new Round prompt
+                newRound_prompt(&player, game);
 
                 //Check number of cards
 
