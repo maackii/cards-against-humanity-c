@@ -33,7 +33,7 @@
 #define ERROR -1
 #define SUCCESS 1
 
-#define SHOW_ERROR_HANDLING 0
+#define SHOW_ERROR_HANDLING 1
 
 /*bitflags & ctrl messages*/
 
