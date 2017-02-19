@@ -43,17 +43,17 @@ void choose_replies(player_t *player, int gaps){
         gimme_good_lines("", __LINE__);
 
         do {
-            printf("Please choose answer for %dst gap. [type 1-5]\n", i + 1);
+            printf("Please choose answer for %dst gap. [type 1-%d]\n", i + 1, MAXHANDCARDS);
             scanf("%d", &scan);
             check_input = scan;
 
-            if(check_input < 1 || check_input > 5){
+            if(check_input < 1 || check_input > MAXHANDCARDS){
                 printf("Wrong input. Please choose number between 1 and %d.\n", HANDCARDS_MAX);
             }else if(player->cardText[check_input-1] == NULL){
                 printf("Wrong input, answer already used.\n");
             }
 
-        }while(check_input < 1 || check_input > 5 || player->cardText[check_input -1] == NULL);
+        }while(check_input < 1 || check_input > MAXHANDCARDS || player->cardText[check_input -1] == NULL);
 
         gimme_good_lines("", __LINE__);
         player->replies[i] = malloc(strlen(player->cardText[scan -1]) * sizeof(char));
@@ -375,7 +375,7 @@ int main(int argc, char* argv[]) {
                 //CTRL send ok if number of cards == 5
                 if(1 == ok_cardNumber(&player)){
                     sendIntPackage(player.socketID, MSG_CTRL, C_TYPE_OK);
-                    printf("Sended Cardnumber-OK to Server \n");
+                    printf("Sent Cardnumber-OK to Server \n");
                 }
                 break;
 
@@ -390,7 +390,7 @@ int main(int argc, char* argv[]) {
                     gimme_good_lines("", __LINE__);
                     //send funny answer(s)
                     sendDataPackage(player.socketID, D_TYPE_HANDCARDS, (uint8_t) player.socketID, gaps(game.question), player.replies);
-                    printf("sended replies to server..\n");
+                    printf("sent replies to server..\n");
                 }
                 break;
 
