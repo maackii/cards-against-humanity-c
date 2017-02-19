@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -490,11 +491,13 @@ int main(int argc, char* argv[]) {
                 display_cards(player, game);
                 //choose funny answer(s)
                 gimme_good_lines("", __LINE__);
-                choose_replies(&player, gaps(game.question));
-                gimme_good_lines("", __LINE__);
-                //send funny answer(s)
-                sendDataPackage(player.socketID, D_TYPE_HANDCARDS, (uint8_t ) player.socketID, gaps(game.question), player.replies);
-
+                if(player.role == PLAYER) {
+                    choose_replies(&player, gaps(game.question));
+                    gimme_good_lines("", __LINE__);
+                    //send funny answer(s)
+                    sendDataPackage(player.socketID, D_TYPE_HANDCARDS, (uint8_t) player.socketID, gaps(game.question), player.replies);
+                    printf("sended replies to server..\n");
+                }
                 break;
 
 
