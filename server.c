@@ -112,10 +112,7 @@ int main(int argc, char* argv[]){
             printf("Invalid State\n" );
     }
 
-    freePile(&whiteCards);
-    freePile(&whiteDiscard);
-    closeConnections(headPlayer, mySockFile);
-    destroyGame(&headPlayer, &game);
+    //(&whiteCards, &whiteDiscard, &blackCards, &blackDiscard, mySockFile, &headPlayer, &game);
     return 0;
 }
 

@@ -64,6 +64,7 @@ int connectClient(int mainSocket);                    /*Receive Client Addresses
 void awesomeError(const char *msg);                   /*Personalized error handling*/
 void closeConnections(player_t *head, int mainSocket); /*..close all*/
 int connectToServer(int port, struct hostent* pServer);
+void killServer(pile_t** pile, pile_t** pile1, pile_t** pile2, pile_t** pile3, int socket, player_t** headPlayer, gameState_t* game);
 
 /*data transfer Functions*/
 //int getMessages(player_t* current);
