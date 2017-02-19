@@ -178,11 +178,11 @@ void printCard(char* originalString, int card_type) {          /* 0 = Answers = 
     }
     printf("%s\n", RESET);
     word = strtok(str, " ");
-    int start = TRUE;
+    int start = cTRUE;
     currLen = 0;
 
     while (cnt< MAX_LINE) {
-        if (start == TRUE) {
+        if (start == cTRUE) {
             printf("%s* ", scheme);
             cnt++;
         }
@@ -192,14 +192,14 @@ void printCard(char* originalString, int card_type) {          /* 0 = Answers = 
             if (currLen <= MAX_TEXT_Len) {
                 printf("%s ", word);
                 word = strtok (NULL, " ");
-                start = FALSE ;
+                start = cFALSE ;
             } else {
                 for (int i = oldLen; i < MAX_CARD_WID - 3; i++) {
                     printf(" ");
                 }
                 printf("*%s\n", RESET);
                 currLen = 0;
-                start = TRUE;
+                start = cTRUE;
             }
         }
         if (word == NULL){
@@ -208,7 +208,7 @@ void printCard(char* originalString, int card_type) {          /* 0 = Answers = 
             }
             printf("*%s\n", RESET);
             currLen = 0;
-            start = TRUE;
+            start = cTRUE;
         }
     }
     printf("%s", scheme);

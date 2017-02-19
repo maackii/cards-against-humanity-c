@@ -8,12 +8,12 @@
 #define MAX_LINE 10
 #define MAX_TEXT_Len 18
 #define BLACKBACK "\033[30;107m"
-#define WHITEBACK "\033[97;40m"         
+#define WHITEBACK "\033[97;40m"
 #define RESET "\033[39;49m"
 #define ERROR -1
 #define SUCCESS 1
-#define TRUE 1
-#define FALSE -1
+#define cTRUE 1
+#define cFALSE -1
 
 typedef struct card {
     int used;                   /*  if already used =1, if not used yet =0*/
