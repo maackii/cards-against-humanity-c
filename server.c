@@ -76,8 +76,6 @@ int main(int argc, char* argv[]){
 
         case newRound :
             pINFO("Server state %s", "newRound");
-
-            //Function Update -->test DONE?
             game.round++;
             updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
             updateQuestion(&game, &blackCards, &blackDiscard);
@@ -89,18 +87,22 @@ int main(int argc, char* argv[]){
             updatePlayer = headPlayer;
             while (updatePlayer != NULL) {
               if(updatePlayer->handCards < MAXHANDCARDS){
-                    sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
-                    updatePlayer->handCards = MAXHANDCARDS;
+                  sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
+                  pINFO("Server: Sent %s", "handcards");
+                  updatePlayer->handCards = MAXHANDCARDS;
               }
               sendDataPackage(updatePlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
+              pINFO("Server: Sent %s", "question");
               sendDataPackage(updatePlayer->socketID, D_TYPE_POINTS, updatePlayer->points, 0, NULL);
+              pINFO("Server: Sent %s", "points");
               sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
+              pINFO("Server: Sent %s", "role");
               updatePlayer = updatePlayer->nextPlayer;
             }
-              game.currentState = waitOK;
-              sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
-              resetStatus(&headPlayer, C_TYPE_RESET);
-            break;
+            game.currentState = waitOK;
+            sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
+            resetStatus(&headPlayer, C_TYPE_RESET);
+        break;
 
         case waitOK :
             pINFO("Server state %s", "waitOK");
