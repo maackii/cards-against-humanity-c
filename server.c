@@ -15,7 +15,7 @@
 enum stateMachine{
     newRound,
     waitOK,
-    receiveReplies,
+    waitReplies,
     waitWinner
 };
 
@@ -69,83 +69,90 @@ int main(int argc, char* argv[]){
     game.round = 2;
     /********************************************************start GAME ENGINE*/
     while (game.round <= game.numbrRounds) {
-        uint8_t check;
-        player_t *current = NULL;
+      uint8_t check;
+      player_t *current = NULL;
 
-        switch (game.currentState) {
+      switch (game.currentState) {
 
-            case newRound :
-                pINFO("Server state %s", "newRound");
+        case newRound :
+            pINFO("Server state %s", "newRound");
 
-                //Function Update -->test DONE?
-                game.round++;
-                updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
-                updateQuestion(&game, &blackCards, &blackDiscard);
-                if (game.round > 1) {
-                    updatePoints(&headPlayer, game.winner);
-                    updateRole(&headPlayer);
-                    updateLeader(headPlayer, &game);
-                }
-                updatePlayer = headPlayer;
-                while (updatePlayer != NULL) {
-                    /*if(updatePlayer->handCards < MAXHANDCARDS){
-                        sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
-                        updatePlayer->handCards = MAXHANDCARDS;
-                    }*/
-                    sendDataPackage(updatePlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
-                    sendDataPackage(updatePlayer->socketID, D_TYPE_POINTS, updatePlayer->points, 0, NULL);
-                    sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
-                    updatePlayer = updatePlayer->nextPlayer;
-                }
-                    game.currentState = waitOK;
+            //Function Update -->test DONE?
+            game.round++;
+            updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
+            updateQuestion(&game, &blackCards, &blackDiscard);
+            if (game.round > 1) {
+                updatePoints(&headPlayer, game.winner);
+                updateRole(&headPlayer);
+                updateLeader(headPlayer, &game);
+            }
+            updatePlayer = headPlayer;
+            while (updatePlayer != NULL) {
+              if(updatePlayer->handCards < MAXHANDCARDS){
+                    sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
+                    updatePlayer->handCards = MAXHANDCARDS;
+              }
+              sendDataPackage(updatePlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
+              sendDataPackage(updatePlayer->socketID, D_TYPE_POINTS, updatePlayer->points, 0, NULL);
+              sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
+              updatePlayer = updatePlayer->nextPlayer;
+            }
+              game.currentState = waitOK;
+              sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
+              resetStatus(&headPlayer, C_TYPE_RESET);
             break;
 
-            case waitOK :
-                pINFO("Server state %s", "waitOK");
-                    check = 0;
-                    current = NULL;
-                    current = headPlayer;
-                        while (current != NULL) {
-                            if (MSG_CTRL == getStatus(current->socketID)) {
-                                if (SUCCESS == getIntPackage(current->socketID, &check)) {
-                                    if ((check == C_TYPE_OK) && ((current->status) != C_TYPE_OK)) {
-                                        count++;
-                                        current->status = C_TYPE_OK;
-                                    }
-                                }
-                            }
-                            //if check get status === KILL --->  DO KILL SERVER
-                            current = current->nextPlayer;
-                    }
-                    if (count == game.numbPlayers){
-                    sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
-                    resetStatus(&headPlayer, C_TYPE_RESET);
-                    game.currentState = receiveReplies;
-                    count = 0;
+        case waitOK :
+            pINFO("Server state %s", "waitOK");
+            check = 0;
+            current = NULL;
+            current = headPlayer;
+            while (current != NULL) {
+              if ( (MSG_CTRL == getStatus(current->socketID)) && ((current->status) != C_TYPE_OK)) {
+                if (SUCCESS == getIntPackage(current->socketID, &check)) {
+                  if ((check == C_TYPE_OK) ) {
+                    count++;
+                    current->status = C_TYPE_OK;
                   }
+                }
+              }
+            //if check get status === KILL --->  DO KILL SERVER
+            current = current->nextPlayer;
+            }
+            if (count == game.numbPlayers){
+              game.currentState = receiveReplies;
+              count = 0;
+            }
+        break;
+
+        case receiveReplies:
+            current = NULL;
+            check = 0;
+            pINFO("Server state %s", "receiveReplies");
+            current = headPlayer;
+            while (current != NULL) {
+              if (MSG_DATA == getStatus(current->socketID) && ((current->status) != C_TYPE_OK)) {
+                if (D_TYPE_HANDCARDS == getStatus(current->socketID)) {
+                  check = getDataPackage(current->socketID, &(current->replies), &check);
+                  pDEBUG("SERVER %s", "Received DataPackage");
+                  current->status = C_TYPE_OK;
+                  count++;
+                }
+              }
+              current = current->nextPlayer;
+            }
+            if (count == game.numbPlayers){
+              resetStatus(&headPlayer, C_TYPE_RESET);
+              game.currentState = waitWinner;
+              count = 0;
+              }
               break;
 
-              case receiveReplies:
-                    current = NULL;
-                    check = 0;
-                    pINFO("Server state %s", "receiveReplies");
+              case waitWinner:
+                  current = NULL;
+                  check = 0;
+                  pINFO("Server state %s", "receiveReplies");
 
-                    current = headPlayer;
-                    while (current != NULL) {
-                      if (MSG_DATA == getStatus(current->socketID)) {
-                        if (D_TYPE_HANDCARDS == getStatus(current->socketID)) {
-                          check = getDataPackage(current->socketID, &(current->replies), &check);
-                          pDEBUG("SERVER %s", "Received DataPackage");
-                          count++;
-                        }
-                      }
-                    current = current->nextPlayer;
-                    }
-                    if (count == game.numbPlayers){
-                    printf("%s\n", headPlayer->replies[1]);
-                    game.round = 10;
-                    }
-              break;
 
               default :
                         printf("Invalid State\n");
