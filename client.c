@@ -223,6 +223,7 @@ void update_status(player_t *player, gameState_t *game){
 
             numb_messg = getDataPackage(player->socketID, &recMessages, &typeID);
             gimme_good_lines("", __LINE__);
+            free(game->question);
             game->question = malloc(strlen(recMessages[0]) * sizeof(char));
             strcpy(game->question, recMessages[0]);
 
