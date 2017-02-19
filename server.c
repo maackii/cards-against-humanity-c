@@ -123,6 +123,7 @@ int main(int argc, char* argv[]){
             }
             if (count == game.numbPlayers){
               game.currentState = waitReplies;
+              sendCtrl(C_TYPE_DISPLAY_CARDS, headPlayer);
               count = 0;
             }
         break;
