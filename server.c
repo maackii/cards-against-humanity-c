@@ -12,9 +12,6 @@
 #include "cardpiles.h"
 #include "connectivity.h"
 
-#define MAX_STR_LEN 512
-
-
 enum stateMachine{
     newRound,
     waitOK,
@@ -22,23 +19,21 @@ enum stateMachine{
     waitWinner
 };
 
-int waitCtrl(int players, int ctrl_, player_t** head);
 int sendCtrl(int CTRL_, player_t* head);
 int resetStatus(player_t** head, int ctrl_);
-int waitMsg(int players, int ctrl_, player_t** head);
 
 int main(int argc, char* argv[]){
     int mySockFile, newConnect, portNumbr;
+    int count = 0;
     player_t* headPlayer = NULL, *updatePlayer = NULL;
     pile_t* whiteCards = NULL, *whiteDiscard = NULL, *blackCards = NULL, *blackDiscard = NULL;
-
 
     //------------------------------------------------------REMOVE AFTER TESTING
     pERROR("I am a test %s", "message");
     pINFO("I am a test %s", "message");
     pDEBUG("I am a test %s", "message");
 
-    gameState_t game = {1, 2, 0, 0, 0, 0, NULL, 0, NULL };
+    gameState_t game = {3, 2, 0, 0, 0, 0, NULL, 0, NULL };
     createPile("answers_bearb.txt", &whiteCards, &whiteDiscard);
     createPile("questions_bearb.txt", &blackCards, &blackDiscard);
     card_t* test = NULL;
@@ -72,103 +67,116 @@ int main(int argc, char* argv[]){
     game.currentState = newRound;
     game.winner = headPlayer->socketID;
     game.round = 2;
-    printf("HOHOHO\n");
-    printf("Game winner ID = %d\n", game.winner);
+    /********************************************************start GAME ENGINE*/
+    while (game.round <= game.numbrRounds) {
+        uint8_t check;
+        player_t *current = NULL;
 
-    while (game.round <= game.numbrRounds){
+        switch (game.currentState) {
 
-      switch(game.currentState){
+            case newRound :
+                pINFO("Server state %s", "newRound");
 
-        case newRound :
-            pINFO("Server state %s", "newRound");
-
-            //Function Update -->test DONE?
-            game.round++;
-            updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
-            updateQuestion(&game, &blackCards, &blackDiscard);
-            if (game.round > 1){
-                updatePoints(&headPlayer, game.winner);
-                updateRole(&headPlayer);
-                updateLeader(headPlayer, &game);
-            }
-            updatePlayer = headPlayer;
-            while (updatePlayer!= NULL){
-                if(updatePlayer->handCards < MAXHANDCARDS){
-                    sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
-                    updatePlayer->handCards = MAXHANDCARDS;
+                //Function Update -->test DONE?
+                game.round++;
+                updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
+                updateQuestion(&game, &blackCards, &blackDiscard);
+                if (game.round > 1) {
+                    updatePoints(&headPlayer, game.winner);
+                    updateRole(&headPlayer);
+                    updateLeader(headPlayer, &game);
                 }
-                sendDataPackage(updatePlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
-                sendDataPackage(updatePlayer->socketID, D_TYPE_POINTS, updatePlayer->points, 0, NULL);
-                sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
-                updatePlayer = updatePlayer->nextPlayer;
-            }
-            game.currentState = waitOK;
+                updatePlayer = headPlayer;
+                while (updatePlayer != NULL) {
+                    /*if(updatePlayer->handCards < MAXHANDCARDS){
+                        sendDataPackage(updatePlayer->socketID, D_TYPE_HANDCARDS, 0, (MAXHANDCARDS - updatePlayer->handCards), updatePlayer->cardText );
+                        updatePlayer->handCards = MAXHANDCARDS;
+                    }*/
+                    sendDataPackage(updatePlayer->socketID, D_TYPE_QUESTION, game.numbExpectedAnswers, 1, &(game.question));
+                    sendDataPackage(updatePlayer->socketID, D_TYPE_POINTS, updatePlayer->points, 0, NULL);
+                    sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
+                    updatePlayer = updatePlayer->nextPlayer;
+                }
+                    game.currentState = waitOK;
             break;
 
-        case waitOK:
-        pINFO("Server state %s", "waitOK");
-        
-          uint8_t check = 0;
-          int count = 0;
-          player_t* current = NULL;
-          while (count < game.numbPlayers){
-              current = headPlayer;
-              while (current!=NULL){
-                  check = getStatus(current->socketID);
-                if (check == MSG_CTRL){
-                    if(SUCCESS == getIntPackage(current->socketID, &check)){
-                        if ( (check == C_TYPE_OK) && ((current->status) != C_TYPE_OK)){
-                            count++;
-                            current->status = C_TYPE_OK;
-                        }
+            case waitOK :
+                pINFO("Server state %s", "waitOK");
+                    check = 0;
+                    current = NULL;
+                    current = headPlayer;
+                        while (current != NULL) {
+                            if (MSG_CTRL == getStatus(current->socketID)) {
+                                if (SUCCESS == getIntPackage(current->socketID, &check)) {
+                                    if ((check == C_TYPE_OK) && ((current->status) != C_TYPE_OK)) {
+                                        count++;
+                                        current->status = C_TYPE_OK;
+                                    }
+                                }
+                            }
+                            //if check get status === KILL --->  DO KILL SERVER
+                            current = current->nextPlayer;
                     }
+                    if (count == game.numbPlayers){
+                    sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
+                    resetStatus(&headPlayer, C_TYPE_RESET);
+                    game.currentState = receiveReplies;
+                    count = 0;
+                  }
+              break;
+
+              case receiveReplies:
+                    current = NULL;
+                    check = 0;
+                    pINFO("Server state %s", "receiveReplies");
+
+                    current = headPlayer;
+                    while (current != NULL) {
+                      if (MSG_DATA == getStatus(current->socketID)) {
+                        if (D_TYPE_HANDCARDS == getStatus(current->socketID)) {
+                          check = getDataPackage(current->socketID, &(current->replies), &check);
+                          pDEBUG("SERVER %s", "Received DataPackage");
+                          count++;
+                        }
+                      }
+                    current = current->nextPlayer;
+                    }
+                    if (count == game.numbPlayers){
+                    printf("%s\n", headPlayer->replies[1]);
+                    game.round = 10;
+                    }
+              break;
+
+              default :
+                        printf("Invalid State\n");
                 }
+        }
 
-                //if check get status === KILL --->  DO KILL SERVER
-              current = current->nextPlayer;
-            }
-          }
-          sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
-          resetStatus(&headPlayer, C_TYPE_RESET);
-          game.currentState = receiveReplies;
-        break;
-
-        case receiveReplies:
-
-            pINFO("Server state %s", "receiveReplies");
-
-            break;
-
-        default :
-            printf("Invalid State\n" );
-    }
-}
 
     killServer(&whiteCards, &whiteDiscard, &blackCards, &blackDiscard, mySockFile, &headPlayer, &game);
     return 0;
 }
 
 
-int sendCtrl(int ctrl_, player_t* head){
-    player_t* current = NULL;
-    current = head;
-    while (current != NULL){
-        sendIntPackage(current->socketID, MSG_CTRL, ctrl_);
-        current = current->nextPlayer;
+    int sendCtrl(int ctrl_, player_t* head){
+        player_t* current = NULL;
+        current = head;
+        while (current != NULL){
+            sendIntPackage(current->socketID, MSG_CTRL, ctrl_);
+            current = current->nextPlayer;
+        }
+        return SUCCESS;
     }
-    return SUCCESS;
-}
 
-int resetStatus(player_t** head, int ctrl_){
-    player_t *current = NULL;
-    current = *head;
-    while (current != NULL) {
-        current->status = ctrl_;
-        current = current->nextPlayer;
+    int resetStatus(player_t** head, int ctrl_){
+        player_t *current = NULL;
+        current = *head;
+        while (current != NULL) {
+            current->status = ctrl_;
+            current = current->nextPlayer;
+        }
+        return SUCCESS;
     }
-    return SUCCESS;
-}
-
 
 
 /*-----------------------------------------------burn after testing
