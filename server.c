@@ -17,13 +17,15 @@
 
 enum stateMachine{
     newRound,
+    waitOK,
     receiveReplies,
     waitWinner
 };
 
-int checkStatus(int players, int ctrl_, player_t** head);
+int waitCtrl(int players, int ctrl_, player_t** head);
 int sendCtrl(int CTRL_, player_t* head);
 int resetStatus(player_t** head, int ctrl_);
+int waitMsg(int players, int ctrl_, player_t** head);
 
 int main(int argc, char* argv[]){
     int mySockFile, newConnect, portNumbr;
@@ -36,7 +38,7 @@ int main(int argc, char* argv[]){
     pINFO("I am a test %s", "message");
     pDEBUG("I am a test %s", "message");
 
-    gameState_t game = {0, 2, 0, 0, 0, 0, NULL, 0, NULL };
+    gameState_t game = {1, 2, 0, 0, 0, 0, NULL, 0, NULL };
     createPile("answers_bearb.txt", &whiteCards, &whiteDiscard);
     createPile("questions_bearb.txt", &blackCards, &blackDiscard);
     card_t* test = NULL;
@@ -73,10 +75,14 @@ int main(int argc, char* argv[]){
     printf("HOHOHO\n");
     printf("Game winner ID = %d\n", game.winner);
 
-    switch(game.currentState){
+    while (game.round <= game.numbrRounds){
+
+      switch(game.currentState){
 
         case newRound :
             pINFO("Server state %s", "newRound");
+
+            //Function Update -->test DONE?
             game.round++;
             updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
             updateQuestion(&game, &blackCards, &blackDiscard);
@@ -96,47 +102,52 @@ int main(int argc, char* argv[]){
                 sendDataPackage(updatePlayer->socketID, D_TYPE_ROLE, updatePlayer->role, 0, NULL);
                 updatePlayer = updatePlayer->nextPlayer;
             }
-
-            if (SUCCESS == checkStatus(game.numbPlayers, C_TYPE_OK, &headPlayer)){
-                sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
-                resetStatus(&headPlayer, C_TYPE_RESET);
-                game.currentState = receiveReplies;
-            }
+            game.currentState = waitOK;
             break;
 
+        case waitOK:
+        pINFO("Server state %s", "waitOK");
+        
+          uint8_t check = 0;
+          int count = 0;
+          player_t* current = NULL;
+          while (count < game.numbPlayers){
+              current = headPlayer;
+              while (current!=NULL){
+                  check = getStatus(current->socketID);
+                if (check == MSG_CTRL){
+                    if(SUCCESS == getIntPackage(current->socketID, &check)){
+                        if ( (check == C_TYPE_OK) && ((current->status) != C_TYPE_OK)){
+                            count++;
+                            current->status = C_TYPE_OK;
+                        }
+                    }
+                }
+
+                //if check get status === KILL --->  DO KILL SERVER
+              current = current->nextPlayer;
+            }
+          }
+          sendCtrl(C_TYPE_NEW_ROUND, headPlayer);
+          resetStatus(&headPlayer, C_TYPE_RESET);
+          game.currentState = receiveReplies;
+        break;
+
         case receiveReplies:
+
+            pINFO("Server state %s", "receiveReplies");
 
             break;
 
         default :
             printf("Invalid State\n" );
     }
+}
 
-    //(&whiteCards, &whiteDiscard, &blackCards, &blackDiscard, mySockFile, &headPlayer, &game);
+    killServer(&whiteCards, &whiteDiscard, &blackCards, &blackDiscard, mySockFile, &headPlayer, &game);
     return 0;
 }
 
-int checkStatus(int players, int ctrl_, player_t** head){
-    int count = 0;
-    uint8_t check = 0;
-    player_t* current = NULL;
-    while (count < players){
-        current = *head;
-        while (current!=NULL){
-            check = getStatus(current->socketID);
-            if (check == MSG_CTRL){
-                if(SUCCESS == getIntPackage(current->socketID, &check)){
-                    if ( (check == ctrl_) && ((current->status) != ctrl_)){
-                        count++;
-                        current->status = C_TYPE_OK;
-                    }
-                }
-            }
-            current = current->nextPlayer;
-        }
-    }
-    return SUCCESS;
-}
 
 int sendCtrl(int ctrl_, player_t* head){
     player_t* current = NULL;
