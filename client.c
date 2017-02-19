@@ -143,7 +143,7 @@ void display_replies(player_t *player, gameState_t game){
     for(i = 0, curPlayer = player->nextPlayer; curPlayer != NULL; curPlayer = curPlayer->nextPlayer, i++){
         printf("[%d]", i);
         for(j = 0; j < game.numbExpectedAnswers; j++) {
-            printf(" %s", curPlayer->replies[j]);
+            printf(" %s\n", curPlayer->replies[j]);
         }
     }
 }
@@ -229,13 +229,14 @@ void update_status(player_t *player, gameState_t *game){
 
         case D_TYPE_REPLIES:
 
-            player->nextPlayer->socketID = 5;
+            //player->nextPlayer->socketID = 5;
             numb_messg = getDataPackage(player->socketID, &recMessages, &typeID);
 
             for(curPlayer = player->nextPlayer; curPlayer->nextPlayer != NULL && curPlayer->socketID != typeID; curPlayer = curPlayer->nextPlayer){
                 printf("typeID: %d, curPlayer_ID: %2d &nextPlayer: %p\n", typeID, curPlayer->socketID, curPlayer->nextPlayer);
             }
                 printf("außen typeID: %d, curPlayer_ID: %2d &nextPlayer: %p\n", typeID, curPlayer->socketID, curPlayer->nextPlayer);
+
 
             if(curPlayer->socketID == typeID){
                 for(i = 0; i < MAXREPLIES; i++){
@@ -250,6 +251,36 @@ void update_status(player_t *player, gameState_t *game){
                 }
                 for(i = 0; i < numb_messg; i++){
                     printf("REPLIES OF PLAYER %d: %s\n",curPlayer->socketID, curPlayer->replies[i]);
+                }
+            }
+
+            else{
+                gimme_good_lines("", __LINE__);
+                printf("found no player with ID %d, searching for blank player....", typeID);
+
+                for(curPlayer = player->nextPlayer; curPlayer->nextPlayer != NULL && curPlayer->socketID != -1; curPlayer = curPlayer->nextPlayer){
+                    printf("ID = %d\n", curPlayer->socketID);
+                }
+                    printf("außen ID = %d\n", curPlayer->socketID);
+
+                if(curPlayer->socketID == -1){
+                    gimme_good_lines("", __LINE__);
+                    printf("found blank player filling in replies....\n");
+                    curPlayer->socketID = typeID;
+
+                    for(i = 0; i < numb_messg; i++){
+                        curPlayer->replies[i] = malloc(strlen(recMessages[i]) * sizeof(char));
+                        strcpy(curPlayer->replies[i], recMessages[i]);
+                        gimme_good_lines("", __LINE__);
+                    }
+
+                    for(i = 0; i < numb_messg; i++){
+                        printf("REPLIES OF PLAYER %d: %s\n",curPlayer->socketID, curPlayer->replies[i]);
+                    }
+
+                }else{
+                    gimme_good_lines("", __LINE__);
+                    perror("error while searching player in player array to save received replies.\n");
                 }
             }
 
@@ -340,7 +371,12 @@ void update_status(player_t *player, gameState_t *game){
 
             gimme_good_lines("", __LINE__);
             player->role = getInt;
-            printf("U are role %d\n", player->role);
+
+            if(player->role == CARDCZAR){
+                printf("YOU ARE CARDCZAR!");
+            }else{
+                printf("YOU ARE REGULAR PLAYER!");
+            }
 
             break;
 
@@ -386,7 +422,7 @@ int main(int argc, char* argv[]) {
         //awesomeError("Could not create socket!");
         exit(-1);
     }
-    printf("I am connected with the ID %d\n", player.socketID);
+    //printf("I am connected with the ID %d\n", player.socketID);
 
 //-------------------connect client end---------------------------
 
@@ -487,6 +523,7 @@ int main(int argc, char* argv[]) {
                 //CTRL send ok if number of cards == 5
                 if(ok_cardnumber(&player)){
                     sendIntPackage(player.socketID, MSG_CTRL, C_TYPE_OK);
+                    printf("Sended Cardnumber-OK to Server \n");
                 }
                 break;
 
@@ -507,6 +544,8 @@ int main(int argc, char* argv[]) {
 
                 //Czar choose winner
             case C_TYPE_DISPLAY_ANSWERS:
+
+                pINFO("Clientstate %s", "display_answers");
                 //get all funny answers
 
                 //display all funny answers to all (shuffled)
@@ -517,7 +556,7 @@ int main(int argc, char* argv[]) {
                 break;
 
             default:
-                printf("no valid / new status! ...restart switching...\n");
+                printf("...\n");
                 break;
 
         }
