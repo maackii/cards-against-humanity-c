@@ -167,9 +167,10 @@ void chooseSend_bestReply(player_t *player, gameState_t game){
     sendDataPackage(player->socketID, D_TYPE_WINNER, winnerID, 0, NULL);
 }
 
-uint8_t ok_cardnumber(player_t *player){
+uint8_t ok_cardNumber(player_t *player){
 
-    if(player->handCards == HANDCARDS_MAX){
+    if(player->handCards == MAXHANDCARDS){
+        printf("number handCards is ok!\n");
         return 1;
     }
     else return 0;
@@ -522,7 +523,7 @@ int main(int argc, char* argv[]) {
                 //Check number of cards
 
                 //CTRL send ok if number of cards == 5
-                if(ok_cardnumber(&player)){
+                if(1 == ok_cardNumber(&player)){
                     sendIntPackage(player.socketID, MSG_CTRL, C_TYPE_OK);
                     printf("Sended Cardnumber-OK to Server \n");
                 }
