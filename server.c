@@ -25,10 +25,12 @@ int resetStatus(player_t* head, int ctrl_);
 int sendReplies(player_t* head, int numbReplies);
 int sendPlayerUpdates(player_t* head, gameState_t game);
 int getReply(player_t * player);
+int sendWinner(player_t* head, uint8_t winner, char* name);
 /**************************************************************************************/
 
 int main(int argc, char* argv[]){
     int mySockFile, newConnect, portNumbr;
+    char* defaultName = "Anon.";
     int count = 0;
     player_t* headPlayer = NULL, *updatePlayer = NULL;
     pile_t* whiteCards = NULL, *whiteDiscard = NULL, *blackCards = NULL, *blackDiscard = NULL;
@@ -62,9 +64,11 @@ int main(int argc, char* argv[]){
         if (newConnect>0){
             headPlayer = createPlayer(headPlayer, newConnect); /*create player bekommt die socket ID*/
             headPlayer->socketID = newConnect;
+            headPlayer->name = malloc ((strlen(defaultName)+1)*sizeof(char));
+            strcpy(headPlayer->name, defaultName);
             fcntl(newConnect, F_SETFL, fcntl(newConnect, F_GETFL, 0) | O_NONBLOCK);
             n++;
-            printf("Client [%d] has val: %d\n", n, headPlayer->socketID);
+            printf("Client [%s] [%d] has val: %d\n", headPlayer->name, n, headPlayer->socketID);
         }
     }
 
@@ -72,12 +76,13 @@ int main(int argc, char* argv[]){
     printf("all clients connected\n");
     game.currentState = newRound;
     game.winner = headPlayer->socketID;
-    game.round = 2;
+    game.round = 1;
     /********************************************************start GAME ENGINE*/
 
     while (game.round <= game.numbrRounds) {
       uint8_t check;
       player_t *current = NULL;
+      char* curWinner = NULL;
 
       switch (game.currentState) {
 
@@ -87,7 +92,7 @@ int main(int argc, char* argv[]){
             updateHandcards(&headPlayer, &whiteCards, &whiteDiscard);
             updateQuestion(&game, &blackCards, &blackDiscard);
             if (game.round > 1) {
-                updatePoints(&headPlayer, game.winner);
+                updatePoints(headPlayer, game.winner);
                 updateRole(&headPlayer);
                 updateLeader(headPlayer, &game);
             }
@@ -100,7 +105,7 @@ int main(int argc, char* argv[]){
         case waitOK :
           current = NULL;
           check = 0;
-          pINFO("Server state %s", "waitOK");
+          //pINFO("Server state %s", "waitOK");
 
 
           current = headPlayer;
@@ -109,6 +114,7 @@ int main(int argc, char* argv[]){
                 if (SUCCESS == getIntPackage(current->socketID, &check)) {
                   if ((check == C_TYPE_OK) ) {
                     count++;
+                    pINFO("RECEIVED %s", "OK");
                     current->status = C_TYPE_OK;
                   }
                 }
@@ -135,9 +141,9 @@ int main(int argc, char* argv[]){
                 if (D_TYPE_HANDCARDS == getStatus(current->socketID)) {
                   //check = getDataPackage(current->socketID, &(current->replies), &check);
 
-                    gimme_good_lines("", __LINE__);
+                    //gimme_good_lines("", __LINE__);
                     numbMessages = getReply(current);
-                    gimme_good_lines("", __LINE__);
+                    //gimme_good_lines("", __LINE__);
 
                   pDEBUG("SERVER %s", "Received DataPackage");
                   current->status = C_TYPE_OK;
@@ -149,17 +155,8 @@ int main(int argc, char* argv[]){
             if (count == (game.numbPlayers-1)){
               pDEBUG("SERVER %s", "Reached Condition to change to waitWinner");
               resetStatus(headPlayer, C_TYPE_RESET);
-
-                gimme_good_lines("", __LINE__);
-
               game.currentState = waitWinner;
-
-                gimme_good_lines("", __LINE__);
-
               sendReplies(headPlayer, gaps(game.question));
-
-                gimme_good_lines("", __LINE__);
-
               sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
               count = 0;
             }
@@ -170,7 +167,7 @@ int main(int argc, char* argv[]){
             check = 0;
               pINFO("Server state %s", "waitWinner");
 
-              //***************JULY PFUSCH****************************************************
+
               int czarSocket = 0;
               uint8_t getWInnerID = 0;
 
@@ -178,7 +175,6 @@ int main(int argc, char* argv[]){
                   gimme_good_lines("", __LINE__);
               if(current->role == CARDCZAR) {
                   czarSocket = current->socketID;
-                  gimme_good_lines("", __LINE__);
               }
               gimme_good_lines("", __LINE__);
 
@@ -191,23 +187,25 @@ int main(int argc, char* argv[]){
 
                             gimme_good_lines("", __LINE__);
                             //check = getDataPackage(current->socketID, &(current->replies), &check);
+                            //gimme_good_lines("", __LINE__);
+                            getIntPackage(czarSocket, &game.winner);
+                            //gimme_good_lines("", __LINE__);
 
-                            gimme_good_lines("", __LINE__);
-                            getIntPackage(czarSocket, &getWInnerID);
-                            gimme_good_lines("", __LINE__);
-
-                            pDEBUG("SERVER %s", "Received DataPackage");
+                            pDEBUG("SERVER %s", "Received Winner");
                             current->status = C_TYPE_OK;
-                            printf("Winner is ID %d", getWInnerID);
-
-                        }
+                          }
                     }
               }
 
-              //****************JULY PFUSCH ENDE***********************************************
-
-            exit(-1);
-
+              printf("Winner is ID %d", game.winner);
+              if (curWinner!= NULL) free(curWinner);
+              curWinner = malloc((strlen(current->name)+1)* sizeof(char));
+              strcpy (curWinner, current->name);
+              printf("%s\n", curWinner);
+              sendWinner(headPlayer, game.winner, curWinner);
+              free(curWinner);
+              resetStatus(headPlayer, C_TYPE_RESET);
+              game.currentState = newRound;
 
         break;
 
@@ -308,6 +306,19 @@ int sendPlayerUpdates(player_t* head, gameState_t game){
   }
 return SUCCESS;
 }
+int sendWinner(player_t* head, uint8_t winnerAddr, char* name){
+  player_t* current = NULL;
+  current = head;
+  while (current!= NULL){
+    sendDataPackage(current->socketID, D_TYPE_WINNER, winnerAddr, 1, &name);
+    pINFO("Server: Sent %s", "winner");
+    current = current->nextPlayer;
+  }
+
+  return SUCCESS;
+
+}
+
 
 /*-----------------------------------------------burn after testing
 updatePlayer = headPlayer;
