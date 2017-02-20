@@ -83,10 +83,10 @@ void display_cards(player_t player, gameState_t game){
 void display_replies(player_t *player, gameState_t game){
     player_t *curPlayer = NULL;
     int i, j;
-
-    for(i = 0, curPlayer = player->nextPlayer; curPlayer != NULL; curPlayer = curPlayer->nextPlayer, i++){
-        printf("[%d]", i);
-        for(j = 0; j < game.numbExpectedAnswers; j++) {
+    printf("\n*******ALL GIVEN ANSWERS*******\n");
+    for(i = 0, curPlayer = player->nextPlayer; curPlayer->replies[0] != NULL; curPlayer = curPlayer->nextPlayer, i++){
+        printf("[%d]", i+1);
+        for(j = 0; j < gaps(game.question); j++) {
             printf(" %s\n", curPlayer->replies[j]);
         }
     }
