@@ -38,7 +38,7 @@ int main(int argc, char* argv[]){
     pINFO("I am a test %s", "message");
     pDEBUG("I am a test %s", "message");
 
-    gameState_t game = {3, 2, 0, 0, 0, 0, NULL, 0, NULL };
+    gameState_t game = {3, 3, 0, 0, 0, 0, NULL, 0, NULL };
     createPile("answers_bearb.txt", &whiteCards, &whiteDiscard);
     createPile("questions_bearb.txt", &blackCards, &blackDiscard);
     card_t* test = NULL;
