@@ -96,10 +96,10 @@ int updateHandcards(player_t** head, pile_t** draw, pile_t** discard){
     return SUCCESS;
 }
 
-int updatePoints(player_t** head, int winnerID){
+int updatePoints(player_t* head, int winnerID){
     player_t *current = NULL;
     int cnt = 0;
-    current = *head;
+    current = head;
     while (current != NULL) {
         if (current->socketID == winnerID){
             current->points++;
