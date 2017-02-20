@@ -106,8 +106,6 @@ int main(int argc, char* argv[]){
           current = NULL;
           check = 0;
           //pINFO("Server state %s", "waitOK");
-
-
           current = headPlayer;
           while (current != NULL) {
               if ( (MSG_CTRL == getStatus(current->socketID)) && ((current->status) != C_TYPE_OK)) {
@@ -197,7 +195,7 @@ int main(int argc, char* argv[]){
                     }
               }
 
-              printf("Winner is ID %d", game.winner);
+              printf("Winner is ID %d\n", game.winner);
               if (curWinner!= NULL) free(curWinner);
               curWinner = malloc((strlen(current->name)+1)* sizeof(char));
               strcpy (curWinner, current->name);
