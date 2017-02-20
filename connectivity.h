@@ -80,8 +80,4 @@ uint8_t getStatus(int socket);
 //int getInt(int socket, uint8_t* payload, uint8_t statusID);
 
 
-
-
-
-
 #endif
