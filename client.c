@@ -406,9 +406,13 @@ int main(int argc, char* argv[]) {
 
                 //display all funny answers to all (shuffled)
                 display_replies(&player, game);
-                //Czar chooses winner
-                //Czar sends winner to server
-                chooseSend_bestReply(&player, game);
+
+                if(player.role == CARDCZAR) {
+                    //Czar chooses winner
+                    //Czar sends winner to server
+                    chooseSend_bestReply(&player, game);
+                }
+                ctrl = 111;
                 break;
 
             default:
