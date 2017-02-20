@@ -378,6 +378,7 @@ int main(int argc, char* argv[]) {
                     sendIntPackage(player.socketID, MSG_CTRL, C_TYPE_OK);
                     printf("Sent Cardnumber-OK to Server \n");
                 }
+                ctrl = 111;
                 break;
 
                 //Choose & send funny answers
