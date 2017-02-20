@@ -168,7 +168,44 @@ int main(int argc, char* argv[]){
         case waitWinner:
             current = NULL;
             check = 0;
-            pINFO("Server state %s", "waitWinner");
+              pINFO("Server state %s", "waitWinner");
+
+              //***************JULY PFUSCH****************************************************
+              int czarSocket = 0;
+              uint8_t getWInnerID = 0;
+
+              for(current = headPlayer; current->role != CARDCZAR && current != NULL; current = current->nextPlayer)
+                  gimme_good_lines("", __LINE__);
+              if(current->role == CARDCZAR) {
+                  czarSocket = current->socketID;
+                  gimme_good_lines("", __LINE__);
+              }
+              gimme_good_lines("", __LINE__);
+
+              while ((current->status) != C_TYPE_OK) {
+
+                    if(MSG_DATA == getStatus(czarSocket)) {
+                        gimme_good_lines("", __LINE__);
+                        pDEBUG("Server state %s", "wait Winner 2");
+                        if (D_TYPE_WINNER == getStatus(current->socketID)) {
+
+                            gimme_good_lines("", __LINE__);
+                            //check = getDataPackage(current->socketID, &(current->replies), &check);
+
+                            gimme_good_lines("", __LINE__);
+                            getIntPackage(czarSocket, &getWInnerID);
+                            gimme_good_lines("", __LINE__);
+
+                            pDEBUG("SERVER %s", "Received DataPackage");
+                            current->status = C_TYPE_OK;
+                            printf("Winner is ID %d", getWInnerID);
+
+                        }
+                    }
+              }
+
+              //****************JULY PFUSCH ENDE***********************************************
+
             exit(-1);
 
 
