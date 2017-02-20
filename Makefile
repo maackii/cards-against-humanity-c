@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -pedantic -std = c99
 DEPS = connectivity.h players.h
 OBJS = connectivity.o players.o
 
