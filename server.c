@@ -7,6 +7,7 @@
 //#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <netinet/in.h>
 #include "players.h"
 #include "cardpiles.h"
@@ -23,6 +24,7 @@ int sendCtrl(int CTRL_, player_t* head);
 int resetStatus(player_t* head, int ctrl_);
 int sendReplies(player_t* head, int numbReplies);
 int sendPlayerUpdates(player_t* head, gameState_t game);
+int getReply(player_t * player);
 /**************************************************************************************/
 
 int main(int argc, char* argv[]){
@@ -124,13 +126,19 @@ int main(int argc, char* argv[]){
         case waitReplies:
             current = NULL;
             check = 0;
+              int numbMessages = 0;
             pINFO("Server state %s", "receiveReplies");
             current = headPlayer;
             while (current != NULL) {
               if ((MSG_DATA == getStatus(current->socketID)) && ((current->status) != C_TYPE_OK)) {
                   pDEBUG("Server state %s", "receiveReplies 2");
                 if (D_TYPE_HANDCARDS == getStatus(current->socketID)) {
-                  check = getDataPackage(current->socketID, &(current->replies), &check);
+                  //check = getDataPackage(current->socketID, &(current->replies), &check);
+
+                    gimme_good_lines("", __LINE__);
+                    numbMessages = getReply(current);
+                    gimme_good_lines("", __LINE__);
+
                   pDEBUG("SERVER %s", "Received DataPackage");
                   current->status = C_TYPE_OK;
                   count++;
@@ -141,8 +149,17 @@ int main(int argc, char* argv[]){
             if (count == (game.numbPlayers-1)){
               pDEBUG("SERVER %s", "Reached Condition to change to waitWinner");
               resetStatus(headPlayer, C_TYPE_RESET);
+
+                gimme_good_lines("", __LINE__);
+
               game.currentState = waitWinner;
-              sendReplies(headPlayer, game.numbExpectedAnswers);
+
+                gimme_good_lines("", __LINE__);
+
+              sendReplies(headPlayer, gaps(game.question));
+
+                gimme_good_lines("", __LINE__);
+
               sendCtrl(C_TYPE_DISPLAY_ANSWERS, headPlayer);
               count = 0;
             }
@@ -168,6 +185,29 @@ int main(int argc, char* argv[]){
 }
 
 
+int getReply(player_t * player){
+    uint8_t check = 0;
+    int i = 0, numbMess = 0;
+    char **recMessages;
+
+    numbMess = getDataPackage(player->socketID, &recMessages, &check);
+
+    for(i = 0; i < MAXREPLIES; i++){
+        free(player->replies[i]);
+        player->replies[i] = NULL;
+        gimme_good_lines("", __LINE__);
+    }
+    for(i = 0; i < numbMess; i++){
+        player->replies[i] = malloc(strlen(recMessages[i]) * sizeof(char));
+        strcpy(player->replies[i], recMessages[i]);
+        gimme_good_lines("", __LINE__);
+    }
+
+    gimme_good_lines("", __LINE__);
+
+    return numbMess;
+}
+
 int sendCtrl(int ctrl_, player_t* head){
       player_t* current = NULL;
       current = head;
@@ -192,13 +232,23 @@ int sendReplies(player_t* head, int numbReplies){
   player_t* current = NULL;
   player_t* curRepl = NULL;
   int tempSocket;
-  for (current = head; current != NULL ; current = current->nextPlayer){
-    tempSocket = current->socketID;
-    for(curRepl = head; curRepl != NULL; curRepl = curRepl->nextPlayer){
-        sendDataPackage(tempSocket, D_TYPE_REPLIES, curRepl->socketID, numbReplies, current->replies);
-        pINFO("Server: Sent %s", "replies");
+
+    for (current = head; current != NULL ; current = current->nextPlayer){
+        tempSocket = current->socketID;
+        for(curRepl = head; curRepl != NULL; curRepl = curRepl->nextPlayer) {
+
+            printf("tempSocket %d, curRepl->socketID %d, numbReplies %d, curRepl->replies %s\n", tempSocket,
+                   curRepl->socketID, numbReplies, (curRepl->replies)[0]);
+            if (curRepl->replies[0] != NULL){
+                gimme_good_lines("", __LINE__);
+            sendDataPackage(tempSocket, D_TYPE_REPLIES, (uint8_t) (curRepl->socketID), numbReplies, curRepl->replies);
+            }
+            gimme_good_lines("", __LINE__);
+
+
+            pINFO("Server: Sent %s", "replies");
+        }
     }
-  }
   return SUCCESS;
 }
 
